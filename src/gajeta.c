@@ -85,18 +85,18 @@ void fgaj_set_level(char level)
 ////void rdz_white() { if (isatty(1)) printf("[37m"); }
 //void rdz_clear() { if (isatty(1)) printf("[0m"); }
 
-int fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
+void *fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 {
-  // TODO
+  // TODO: date
+  // TODO: colour
+
   printf("*** %s %s %s\n", fgaj_level_to_string(level), pref, msg);
-  return 1; // success
+  return NULL;
 }
 
-char *fgaj__string = NULL;
-int fgaj_string_logger(char level, const char *pref, const char *msg)
+void *fgaj_string_logger(char level, const char *pref, const char *msg)
 {
-  printf("*** %s %s %s\n", fgaj_level_to_string(level), pref, msg);
-  return 1; // success
+  return flu_sprintf("*** %s %s %s", fgaj_level_to_string(level), pref, msg);
 }
 
 
@@ -111,7 +111,7 @@ void fgaj_init()
   fgaj__level = 10;
 }
 
-static void fgaj_do_log(
+static void *fgaj_do_log(
   char level, const char *pref, const char *format, va_list ap)
 {
   level = fgaj_normalize_level(level);
@@ -121,15 +121,19 @@ static void fgaj_do_log(
 
   fgaj_init();
 
-  fgaj__logger(level, pref, msg);
+  void *r = fgaj__logger(level, pref, msg);
 
   free(msg);
+
+  return r;
 }
 
-void fgaj_log(char level, const char *pref, const char *format, ...)
+void *fgaj_log(char level, const char *pref, const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log(level, pref, format, ap);
+  void *r = fgaj_do_log(level, pref, format, ap);
   va_end(ap);
+
+  return r;
 }
 

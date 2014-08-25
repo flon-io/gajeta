@@ -23,9 +23,15 @@ context "logging"
   {
     it "logs"
     {
-      fgaj_log('d', "nada", "hello");
+      char *string = NULL;
 
-      ensure(1 == 1);
+      string = (char *)fgaj_log('d', "flon.nada", "all green");
+
+      ensure(string ===f "*** DEBUG flon.nada all green");
+
+      string = (char *)fgaj_log('i', "flon.nada", "all green");
+
+      ensure(string ===f "*** INFO flon.nada all green");
     }
   }
 }
