@@ -60,7 +60,7 @@ char *fgaj_level_to_string(char level)
   if (level == 30) return "INFO";
   if (level == 40) return "ERROR";
   if (level == 50) return "WARN";
-  return "???";
+  return flu_sprintf("%d", level);
 }
 
 void fgaj_set_logger(fgaj_logger *l)

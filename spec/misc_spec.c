@@ -44,6 +44,8 @@ context "misc"
       ensure(fgaj_level_to_string(30) === "INFO");
       ensure(fgaj_level_to_string(40) === "ERROR");
       ensure(fgaj_level_to_string(50) === "WARN");
+
+      ensure(fgaj_level_to_string(15) === "15");
     }
   }
 }
