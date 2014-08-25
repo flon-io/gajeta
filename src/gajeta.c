@@ -31,3 +31,25 @@
 #include "gajeta.h"
 
 
+char fgaj_normalize_level(char level)
+{
+  if (level == 't') return 10;
+  if (level == 'd') return 20;
+  if (level == 'i') return 30;
+  if (level == 'e') return 40;
+  if (level == 'w') return 50;
+  return level;
+}
+
+char *fgaj_level_to_string(char level)
+{
+  level = fgaj_normalize_level(level);
+
+  if (level == 10) return "TRACE";
+  if (level == 20) return "DEBUG";
+  if (level == 30) return "INFO";
+  if (level == 40) return "ERROR";
+  if (level == 50) return "WARN";
+  return "???";
+}
+
