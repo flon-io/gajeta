@@ -1,10 +1,11 @@
 
 NAME=gajeta
+FLIBS=flutil
 
 default: $(NAME).o
 
 .DEFAULT spec clean:
-	$(MAKE) -C tmp/ $@ NAME=$(NAME)
+	$(MAKE) -C tmp/ $@ NAME=$(NAME) FLIBS="$(FLIBS)"
 
 # copy updated version of dep libs into src/
 #

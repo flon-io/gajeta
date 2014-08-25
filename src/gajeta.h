@@ -40,7 +40,10 @@
 // 40 'e' error
 // 50 'w' warn
 
+typedef int fgaj_logger(char level, const char *pref, const char *msg);
+
 void fgaj_set_level(char level);
+void fgaj_set_logger(fgaj_logger *l);
 
 char *fgaj_level_to_string(char level);
 char fgaj_normalize_level(char level);

@@ -25,9 +25,10 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdlib.h>
-//#include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
+#include "flutil.h"
 #include "gajeta.h"
 
 
@@ -51,5 +52,54 @@ char *fgaj_level_to_string(char level)
   if (level == 40) return "ERROR";
   if (level == 50) return "WARN";
   return "???";
+}
+
+//void rdz_red() { if (isatty(1)) printf("[31m"); }
+//void rdz_green() { if (isatty(1)) printf("[32m"); }
+//void rdz_yellow() { if (isatty(1)) printf("[33m"); }
+////void rdz_blue() { if (isatty(1)) printf("[34m"); }
+////void rdz_magenta() { if (isatty(1)) printf("[35m"); }
+//void rdz_cyan() { if (isatty(1)) printf("[36m"); }
+////void rdz_white() { if (isatty(1)) printf("[37m"); }
+//void rdz_clear() { if (isatty(1)) printf("[0m"); }
+
+int fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
+{
+  // TODO
+  printf("*** %s %s %s", fgaj_level_to_string(level), pref, msg);
+  return 1; // success
+}
+
+fgaj_logger *fgaj__logger = NULL;
+char fgaj_level = 10;
+
+void fgaj_init()
+{
+  if (fgaj__logger != NULL) return;
+
+  fgaj__logger = fgaj_color_stdout_logger;
+  fgaj_level = 10;
+}
+
+static void fgaj_do_log(
+  char level, const char *pref, const char *format, va_list ap)
+{
+  level = fgaj_normalize_level(level);
+  if (level < fgaj_level && level <= 50) return;
+
+  char *msg = flu_svprintf(format, ap);
+
+  fgaj_init();
+
+  fgaj__logger(level, pref, msg);
+
+  free(msg);
+}
+
+void fgaj_log(char level, const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log(level, pref, format, ap);
+  va_end(ap);
 }
 

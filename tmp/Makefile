@@ -1,5 +1,5 @@
 
-CFLAGS=-I../src
+CFLAGS=-I../src -g -Wall -O3
 LDLIBS=
 CC=c99
 VPATH=../src
@@ -13,7 +13,7 @@ endif
 s.c: ../spec/*_spec.c
 	$(RODZO) ../spec -o s.c
 
-s: $(NAME).o
+s: $(NAME).o $(FLIBS:=.o)
 
 spec: s
 	time ./s
