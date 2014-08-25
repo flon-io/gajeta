@@ -32,6 +32,15 @@
 #include "gajeta.h"
 
 
+//
+// global
+
+fgaj_logger *fgaj__logger = NULL;
+char fgaj__level = 10;
+
+//
+// misc functions
+
 char fgaj_normalize_level(char level)
 {
   if (level == 't') return 10;
@@ -54,6 +63,19 @@ char *fgaj_level_to_string(char level)
   return "???";
 }
 
+void fgaj_set_logger(fgaj_logger *l)
+{
+  fgaj__logger = l;
+}
+
+void fgaj_set_level(char level)
+{
+  fgaj__level = fgaj_normalize_level(level);
+}
+
+//
+// loggers
+
 //void rdz_red() { if (isatty(1)) printf("[31m"); }
 //void rdz_green() { if (isatty(1)) printf("[32m"); }
 //void rdz_yellow() { if (isatty(1)) printf("[33m"); }
@@ -70,22 +92,30 @@ int fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
   return 1; // success
 }
 
-fgaj_logger *fgaj__logger = NULL;
-char fgaj_level = 10;
+char *fgaj__string = NULL;
+int fgaj_string_logger(char level, const char *pref, const char *msg)
+{
+  printf("*** %s %s %s\n", fgaj_level_to_string(level), pref, msg);
+  return 1; // success
+}
+
+
+//
+// logging functions
 
 void fgaj_init()
 {
   if (fgaj__logger != NULL) return;
 
   fgaj__logger = fgaj_color_stdout_logger;
-  fgaj_level = 10;
+  fgaj__level = 10;
 }
 
 static void fgaj_do_log(
   char level, const char *pref, const char *format, va_list ap)
 {
   level = fgaj_normalize_level(level);
-  if (level < fgaj_level && level <= 50) return;
+  if (level < fgaj__level && level <= 50) return;
 
   char *msg = flu_svprintf(format, ap);
 

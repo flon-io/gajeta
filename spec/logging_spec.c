@@ -12,11 +12,11 @@ context "logging"
 {
   before each
   {
-    //flu_list *l = NULL;
+    fgaj_set_logger(fgaj_string_logger);
   }
   after each
   {
-    //if (l != NULL) flu_list_free(l);
+    fgaj_set_logger(NULL);
   }
 
   describe "fgaj_log()"

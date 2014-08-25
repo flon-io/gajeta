@@ -42,6 +42,9 @@
 
 typedef int fgaj_logger(char level, const char *pref, const char *msg);
 
+int fgaj_color_stdout_logger(char level, const char *pref, const char *msg);
+int fgaj_string_logger(char level, const char *pref, const char *msg);
+
 void fgaj_set_level(char level);
 void fgaj_set_logger(fgaj_logger *l);
 
