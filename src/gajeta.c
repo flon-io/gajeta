@@ -137,3 +137,38 @@ void *fgaj_log(char level, const char *pref, const char *format, ...)
   return r;
 }
 
+void fgaj_t(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('t', pref, format, ap);
+  va_end(ap);
+}
+
+void fgaj_d(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('d', pref, format, ap);
+  va_end(ap);
+}
+
+void fgaj_i(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('i', pref, format, ap);
+  va_end(ap);
+}
+
+void fgaj_e(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('e', pref, format, ap);
+  va_end(ap);
+}
+
+void fgaj_w(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('w', pref, format, ap);
+  va_end(ap);
+}
+
