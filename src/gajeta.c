@@ -66,7 +66,7 @@ char *fgaj_level_to_string(char level)
 int fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 {
   // TODO
-  printf("*** %s %s %s", fgaj_level_to_string(level), pref, msg);
+  printf("*** %s %s %s\n", fgaj_level_to_string(level), pref, msg);
   return 1; // success
 }
 

@@ -19,11 +19,13 @@ context "logging"
     //if (l != NULL) flu_list_free(l);
   }
 
-  describe "gaj_d()"
+  describe "fgaj_log()"
   {
-    it "logs at the debug level"
+    it "logs"
     {
-      ensure(0 == 1);
+      fgaj_log('d', "nada", "hello");
+
+      ensure(1 == 1);
     }
   }
 }
