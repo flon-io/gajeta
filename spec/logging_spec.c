@@ -31,6 +31,24 @@ context "logging"
 
       ensure(fgaj_get_params() ===f "*** INFO flon.nada all green");
     }
+
+    it "doesn't log if level < log level"
+    {
+      pending();
+    }
+  }
+}
+
+describe "fgaj_color_stdout_logger()"
+{
+  it "logs"
+  {
+    printf("---8<---\n");
+    fgaj_log('i', "flon.nada", "all green");
+    fgaj_log('d', "flon.nada", "all green");
+    printf("--->8---\n");
+
+    ensure(1 == 1);
   }
 }
 

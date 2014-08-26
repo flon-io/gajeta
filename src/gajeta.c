@@ -27,6 +27,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "flutil.h"
 #include "gajeta.h"
@@ -96,12 +97,23 @@ void *fgaj_get_params()
 ////void rdz_white() { if (isatty(1)) printf("[37m"); }
 //void rdz_clear() { if (isatty(1)) printf("[0m"); }
 
+char *fgaj_now()
+{
+  time_t tt; time(&tt);
+  struct tm *tm; tm = gmtime(&tt);
+  char *s = calloc(35, sizeof(char));
+  strftime(s, 35, "%F %T %z", tm);
+
+  // TODO: use gettimeofday() for microseconds
+
+  return s;
+}
+
 void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 {
-  // TODO: date
   // TODO: colour
 
-  printf("*** %s %s %s\n", fgaj_level_to_string(level), pref, msg);
+  printf("%s %s %s %s\n", fgaj_now(), fgaj_level_to_string(level), pref, msg);
 }
 
 void fgaj_string_logger(char level, const char *pref, const char *msg)
