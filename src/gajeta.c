@@ -146,6 +146,8 @@ void fgaj_init()
 {
   if (fgaj__logger != NULL) return;
 
+  // TODO: fetch conf from env
+
   fgaj__logger = fgaj_color_stdout_logger;
   fgaj__level = 10;
 }
