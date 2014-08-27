@@ -27,6 +27,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <time.h>
 
 #include "flutil.h"
@@ -88,14 +89,14 @@ void *fgaj_get_params()
 //
 // loggers
 
-//void rdz_red() { if (isatty(1)) printf("[31m"); }
-//void rdz_green() { if (isatty(1)) printf("[32m"); }
-//void rdz_yellow() { if (isatty(1)) printf("[33m"); }
-////void rdz_blue() { if (isatty(1)) printf("[34m"); }
-////void rdz_magenta() { if (isatty(1)) printf("[35m"); }
-//void rdz_cyan() { if (isatty(1)) printf("[36m"); }
-////void rdz_white() { if (isatty(1)) printf("[37m"); }
-//void rdz_clear() { if (isatty(1)) printf("[0m"); }
+char *fgaj_red() { return isatty(1) ? "[31m" : ""; }
+char *fgaj_green() { return isatty(1) ? "[32m" : ""; }
+char *fgaj_yellow() { return isatty(1) ? "[33m" : ""; }
+char *fgaj_blue() { return isatty(1) ? "[34m" : ""; }
+char *fgaj_magenta() { return isatty(1) ? "[35m" : ""; }
+char *fgaj_cyan() { return isatty(1) ? "[36m" : ""; }
+char *fgaj_white() { return isatty(1) ? "[37m" : ""; }
+char *fgaj_clear() { return isatty(1) ? "[0m" : ""; }
 
 char *fgaj_now()
 {
@@ -111,15 +112,24 @@ char *fgaj_now()
 
 void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 {
-  // TODO: colour
-
-  char *lpad = ""; if (level == 30 || level == 50) lpad = " ";
+  char *lcolor = fgaj_clear();
+  if (level >= 40) lcolor = fgaj_red();
+  else if (level <= 20) lcolor = fgaj_blue();
+  //
+  char *lpad = "";
+  if (level == 30 || level == 50) lpad = " ";
 
   printf(
-    "%s %d/%d %s%s %s %s\n",
+    "%s%s %d/%d %s%s%s %s%s %s%s\n",
+    fgaj_white(),
     fgaj_now(),
     getppid(), getpid(),
-    fgaj_level_to_string(level), lpad, pref, msg);
+    lcolor,
+    fgaj_level_to_string(level), lpad,
+    fgaj_green(),
+    pref, msg,
+    fgaj_clear()
+  );
 }
 
 void fgaj_string_logger(char level, const char *pref, const char *msg)

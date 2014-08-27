@@ -44,8 +44,11 @@ describe "fgaj_color_stdout_logger()"
   it "logs"
   {
     printf("---8<---\n");
-    fgaj_log('i', "flon.nada", "all green");
+    fgaj_log('t', "flon.nada", "performed an addition");
     fgaj_log('d', "flon.nada", "all green");
+    fgaj_log('i', "flon.nada", "all green");
+    fgaj_log('e', "flon.nada", "error somewhere");
+    fgaj_log('w', "flon.nada", "something went badly wrong");
     printf("--->8---\n");
 
     ensure(1 == 1);
