@@ -116,8 +116,10 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
   char *lpad = ""; if (level == 30 || level == 50) lpad = " ";
 
   printf(
-    "%s %s%s %s %s\n",
-    fgaj_now(), fgaj_level_to_string(level), lpad, pref, msg);
+    "%s %d/%d %s%s %s %s\n",
+    fgaj_now(),
+    getppid(), getpid(),
+    fgaj_level_to_string(level), lpad, pref, msg);
 }
 
 void fgaj_string_logger(char level, const char *pref, const char *msg)
