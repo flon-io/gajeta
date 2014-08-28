@@ -46,6 +46,8 @@ void *fgaj__params = NULL;
 
 char fgaj_normalize_level(char level)
 {
+  if (level >= 'A' && level <= 'Z') level = tolower(level);
+
   if (level == 't') return 10;
   if (level == 'd') return 20;
   if (level == 'i') return 30;
@@ -153,10 +155,23 @@ void fgaj_init()
 {
   if (fgaj__logger != NULL) return;
 
-  // TODO: fetch conf from env
+  // determine level
+
+  fgaj__level = 10;
+
+  char *l = getenv("FLON_LOG_LEVEL");
+  if (l == NULL) l = getenv("FGAJ_LEVEL");
+  //
+  if (l != NULL)
+  {
+    if (l[0] > '0' && l[1] < '9') fgaj__level = atoi(l);
+    else fgaj__level = fgaj_normalize_level(l[0]);
+  }
+  //printf("level: %i\n", fgaj__level);
+
+  // determine logger
 
   fgaj__logger = fgaj_color_stdout_logger;
-  fgaj__level = 10;
 }
 
 static void fgaj_do_log(
@@ -165,9 +180,9 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__level && level <= 50) return;
 
-  char *msg = flu_svprintf(format, ap);
-
   fgaj_init();
+
+  char *msg = flu_svprintf(format, ap);
 
   fgaj__logger(level, pref, msg);
 
