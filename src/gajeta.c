@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include "flutil.h"
 #include "gajeta.h"
@@ -107,12 +108,14 @@ char *fgaj_clear() { return isatty(1) ? "[0m" : ""; }
 
 char *fgaj_now()
 {
-  time_t tt; time(&tt);
-  struct tm *tm; tm = gmtime(&tt);
-  char *s = calloc(35, sizeof(char));
-  strftime(s, 35, "%F %T %z", tm);
-
-  // TODO: use gettimeofday() for microseconds
+  struct timeval tv;
+  struct tm *tm;
+  gettimeofday(&tv, NULL);
+  tm = localtime(&tv.tv_sec);
+  char *s = calloc(33, sizeof(char));
+  strftime(s, 33, "%F %T.000000 %z", tm);
+  snprintf(s + 20, 7, "%06i", tv.tv_usec);
+  s[26] = ' ';
 
   return s;
 }
