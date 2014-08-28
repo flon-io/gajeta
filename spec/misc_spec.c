@@ -5,11 +5,11 @@
 // Mon Aug 25 11:41:45 JST 2014
 //
 
+#include <strings.h>
+
 #include "gajeta.h"
 
 
-//char *fgaj_level_to_string(char level);
-//char fgaj_normalize_level(char level);
 context "misc"
 {
   describe "fgaj_normalize_level()"

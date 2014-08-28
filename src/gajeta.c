@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -114,7 +115,7 @@ char *fgaj_now()
   tm = localtime(&tv.tv_sec);
   char *s = calloc(33, sizeof(char));
   strftime(s, 33, "%F %T.000000 %z", tm);
-  snprintf(s + 20, 7, "%06i", tv.tv_usec);
+  snprintf(s + 20, 7, "%06ld", tv.tv_usec);
   s[26] = ' ';
 
   return s;
