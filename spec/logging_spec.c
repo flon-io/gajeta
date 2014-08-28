@@ -53,14 +53,16 @@ describe "fgaj_color_stdout_logger()"
 {
   it "logs"
   {
-    fgaj_conf_get()->level = 10;
+    fgaj_conf_get()->level = 5;
 
     printf("---8<---\n");
     fgaj_log('t', "flon.nada", "performed an addition");
     fgaj_log('d', "flon.nada", "all green");
     fgaj_log('i', "flon.nada", "all green");
+    fgaj_log('w', "flon.nada", "something is going wrong");
     fgaj_log('e', "flon.nada", "error somewhere");
-    fgaj_log('w', "flon.nada", "something went badly wrong");
+    printf("\n");
+    fgaj_log(7, "flon.nada", "custom low log level");
     fgaj_log(22, "flon.nada", "custom log level");
     printf("--->8---\n");
 

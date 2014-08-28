@@ -122,8 +122,8 @@ char fgaj_normalize_level(char level)
   if (level == 't') return 10;
   if (level == 'd') return 20;
   if (level == 'i') return 30;
-  if (level == 'e') return 40;
-  if (level == 'w') return 50;
+  if (level == 'w') return 40;
+  if (level == 'e') return 50;
   return level;
 }
 
@@ -134,8 +134,8 @@ char *fgaj_level_to_string(char level)
   if (level == 10) return "TRACE";
   if (level == 20) return "DEBUG";
   if (level == 30) return "INFO";
-  if (level == 40) return "ERROR";
-  if (level == 50) return "WARN";
+  if (level == 40) return "WARN";
+  if (level == 50) return "ERROR";
   return flu_sprintf("%d", level);
 }
 
@@ -158,8 +158,8 @@ static char *fgaj_red() { return fgaj_color() ? "[31m" : ""; }
 static char *fgaj_green() { return fgaj_color() ? "[32m" : ""; }
 static char *fgaj_yellow() { return fgaj_color() ? "[33m" : ""; }
 static char *fgaj_blue() { return fgaj_color() ? "[34m" : ""; }
-//static char *fgaj_magenta() { return fgaj_color() ? "[35m" : ""; }
-//static char *fgaj_cyan() { return fgaj_color() ? "[36m" : ""; }
+static char *fgaj_magenta() { return fgaj_color() ? "[35m" : ""; }
+static char *fgaj_cyan() { return fgaj_color() ? "[36m" : ""; }
 static char *fgaj_white() { return fgaj_color() ? "[37m" : ""; }
 static char *fgaj_clear() { return fgaj_color() ? "[0m" : ""; }
 
@@ -185,10 +185,14 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 {
   char *now = fgaj_now();
 
-  char *lcolor = fgaj_clear();
-  if (level >= 40) lcolor = fgaj_red();
-  else if (level <= 20) lcolor = fgaj_blue();
-  //
+  char *lcolor = NULL;
+  if (level >= 50) lcolor = fgaj_red();          // error
+  else if (level >= 40) lcolor = fgaj_yellow();  // warn
+  else if (level >= 30) lcolor = fgaj_white();   // info
+  else if (level >= 20) lcolor = fgaj_cyan();    // debug
+  else if (level >= 10) lcolor = fgaj_green();   // trace
+  else lcolor = fgaj_blue();                     // ...
+
   char *lstr = fgaj_level_to_string(level);
 
   printf(
