@@ -37,24 +37,9 @@
 
 
 //
-// global
-
-//typedef struct fgaj_conf {
-//  fgaj_logger *logger;
-//  char level;
-//  short utc;
-//  char *host;
-//  void *params;
-//} fgaj_conf;
+// conf
 
 fgaj_conf *fgaj__conf = NULL;
-
-// // short fgaj__ready = 0;
-// // fgaj_logger *fgaj__logger = NULL;
-// // char fgaj__level = 10;
-// // short fgaj__utc = 0;
-// // char *fgaj__host = NULL;
-// // void *fgaj__params = NULL;
 
 static char *fgaj_getenv(const char *k0, const char *k1)
 {
@@ -72,7 +57,13 @@ static void fgaj_init()
 
   char *s = NULL;
 
-  // utc or not ?
+  // color or not?
+
+  s = fgaj_getenv("FLON_LOG_COLOR", "FGAJ_COLOR");
+
+  fgaj__conf->color = s == NULL ? 't' : s[0];
+
+  // utc or not?
 
   s = fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
 
@@ -156,14 +147,21 @@ void fgaj_level_string_free(char *s)
 //
 // loggers
 
-static char *fgaj_red() { return isatty(1) ? "[31m" : ""; }
-static char *fgaj_green() { return isatty(1) ? "[32m" : ""; }
-static char *fgaj_yellow() { return isatty(1) ? "[33m" : ""; }
-static char *fgaj_blue() { return isatty(1) ? "[34m" : ""; }
-//static char *fgaj_magenta() { return isatty(1) ? "[35m" : ""; }
-//static char *fgaj_cyan() { return isatty(1) ? "[36m" : ""; }
-static char *fgaj_white() { return isatty(1) ? "[37m" : ""; }
-static char *fgaj_clear() { return isatty(1) ? "[0m" : ""; }
+static short fgaj_color()
+{
+  if (fgaj__conf->color == 'T') return 1;
+  if (fgaj__conf->color == 'f') return 0;
+  return isatty(1);
+}
+
+static char *fgaj_red() { return fgaj_color() ? "[31m" : ""; }
+static char *fgaj_green() { return fgaj_color() ? "[32m" : ""; }
+static char *fgaj_yellow() { return fgaj_color() ? "[33m" : ""; }
+static char *fgaj_blue() { return fgaj_color() ? "[34m" : ""; }
+//static char *fgaj_magenta() { return fgaj_color() ? "[35m" : ""; }
+//static char *fgaj_cyan() { return fgaj_color() ? "[36m" : ""; }
+static char *fgaj_white() { return fgaj_color() ? "[37m" : ""; }
+static char *fgaj_clear() { return fgaj_color() ? "[0m" : ""; }
 
 char *fgaj_now()
 {

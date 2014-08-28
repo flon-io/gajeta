@@ -43,6 +43,7 @@
 typedef void fgaj_logger(char level, const char *pref, const char *msg);
 
 typedef struct fgaj_conf {
+  char color;  // 't', 'T', 'f' for true, True and false respectively
   char level;  // defaults to 30 (info)
   short utc;   // 1 = true, defaults to 0
   char *host;  // defaults to result of gethostname()
