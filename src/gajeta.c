@@ -66,6 +66,11 @@ char *fgaj_level_to_string(char level)
   return flu_sprintf("%d", level);
 }
 
+void fgaj_level_string_free(char *s)
+{
+  if (s[0] >= '0' && s[0] <= '9') free(s);
+}
+
 void fgaj_set_logger(fgaj_logger *l)
 {
   fgaj__logger = l;
@@ -112,29 +117,44 @@ char *fgaj_now()
 
 void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
 {
+  char *now = fgaj_now();
+
   char *lcolor = fgaj_clear();
   if (level >= 40) lcolor = fgaj_red();
   else if (level <= 20) lcolor = fgaj_blue();
   //
+  char *lstr = fgaj_level_to_string(level);
+  //
   char *lpad = "";
-  if (level == 30 || level == 50) lpad = " ";
+  if (level == 30 || level == 50)
+  {
+    lpad = " ";
+  }
+  else if (lstr[0] < 'A')
+  {
+    lpad = calloc(6, sizeof(char));
+    size_t lstrl = strlen(lstr);
+    for (int i = 0; i < 5 - lstrl; i++) lpad[i] = ' ';
+  }
 
   printf(
     "%s%s %d/%d %s%s%s %s%s %s%s\n",
-    fgaj_white(),
-    fgaj_now(),
-    getppid(), getpid(),
-    lcolor,
-    fgaj_level_to_string(level), lpad,
-    fgaj_green(),
-    pref, msg,
+    fgaj_yellow(), now, getppid(), getpid(),
+    lcolor, lpad, lstr,
+    fgaj_green(), pref, msg,
     fgaj_clear()
   );
+
+  free(now);
+  if (lpad[0] == ' ' && lpad[1] == ' ' && lpad[2] != '\0') free(lpad);
+  fgaj_level_string_free(lstr);
 }
 
 void fgaj_string_logger(char level, const char *pref, const char *msg)
 {
-  char *s = flu_sprintf("*** %s %s %s", fgaj_level_to_string(level), pref, msg);
+  char *l = fgaj_level_to_string(level);
+  char *s = flu_sprintf("*** %s %s %s", l, pref, msg);
+  fgaj_level_string_free(l);
   fgaj_set_params(s);
 }
 

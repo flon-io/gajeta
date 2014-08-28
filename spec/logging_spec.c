@@ -61,6 +61,7 @@ describe "fgaj_color_stdout_logger()"
     fgaj_log('i', "flon.nada", "all green");
     fgaj_log('e', "flon.nada", "error somewhere");
     fgaj_log('w', "flon.nada", "something went badly wrong");
+    fgaj_log(22, "flon.nada", "custom log level");
     printf("--->8---\n");
 
     ensure(1 == 1);

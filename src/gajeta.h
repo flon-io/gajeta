@@ -53,6 +53,8 @@ void *fgaj_get_params();
 char *fgaj_level_to_string(char level);
 char fgaj_normalize_level(char level);
 
+void fgaj_level_string_free(char *s);
+
 void fgaj_log(char level, const char *pref, const char *format, ...);
 
 void fgaj_t(const char *pref, const char *format, ...);
