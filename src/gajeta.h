@@ -42,13 +42,19 @@
 
 typedef void fgaj_logger(char level, const char *pref, const char *msg);
 
+typedef struct fgaj_conf {
+  char level;  // defaults to 30 (info)
+  short utc;   // 1 = true, defaults to 0
+  char *host;  // defaults to result of gethostname()
+  fgaj_logger *logger;
+  void *params;
+} fgaj_conf;
+
+fgaj_conf *fgaj_conf_get();
+void fgaj_conf_reset();
+
 void fgaj_color_stdout_logger(char level, const char *pref, const char *msg);
 void fgaj_string_logger(char level, const char *pref, const char *msg);
-
-void fgaj_set_level(char level);
-void fgaj_set_logger(fgaj_logger *l);
-void fgaj_set_params(void *params);
-void *fgaj_get_params();
 
 char *fgaj_level_to_string(char level);
 char fgaj_normalize_level(char level);

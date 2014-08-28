@@ -39,12 +39,22 @@
 //
 // global
 
-fgaj_logger *fgaj__logger = NULL;
-char fgaj__level = 10;
-short fgaj__utc = 0;
-char *fgaj__host = NULL;
+//typedef struct fgaj_conf {
+//  fgaj_logger *logger;
+//  char level;
+//  short utc;
+//  char *host;
+//  void *params;
+//} fgaj_conf;
 
-void *fgaj__params = NULL;
+fgaj_conf *fgaj__conf = NULL;
+
+// // short fgaj__ready = 0;
+// // fgaj_logger *fgaj__logger = NULL;
+// // char fgaj__level = 10;
+// // short fgaj__utc = 0;
+// // char *fgaj__host = NULL;
+// // void *fgaj__params = NULL;
 
 static char *fgaj_getenv(const char *k0, const char *k1)
 {
@@ -56,42 +66,59 @@ static char *fgaj_getenv(const char *k0, const char *k1)
 
 static void fgaj_init()
 {
-  if (fgaj__logger != NULL) return;
+  if (fgaj__conf) return;
+
+  fgaj__conf = calloc(1, sizeof(fgaj_conf));
 
   char *s = NULL;
 
   // utc or not ?
 
   s = fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
-  fgaj__utc = (s != NULL && (s[0] == '1' || tolower(s[0]) == 't'));
+
+  fgaj__conf->utc = (s != NULL && (s[0] == '1' || tolower(s[0]) == 't'));
 
   // determine host
 
-  fgaj__host = fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
+  fgaj__conf->host = fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
 
-  if (fgaj__host == NULL)
+  if (fgaj__conf->host == NULL)
   {
     char *h = calloc(16, sizeof(char));
     gethostname(h, 16);
-    fgaj__host = h;
+    fgaj__conf->host = h;
   }
 
   // determine level
 
-  fgaj__level = 10;
+  fgaj__conf->level = 30;
 
   s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
-
+  //
   if (s != NULL)
   {
-    if (s[0] > '0' && s[1] < '9') fgaj__level = atoi(s);
-    else fgaj__level = fgaj_normalize_level(s[0]);
+    if (s[0] > '0' && s[1] < '9') fgaj__conf->level = atoi(s);
+    else fgaj__conf->level = fgaj_normalize_level(s[0]);
   }
   //printf("level: %i\n", fgaj__level);
 
   // determine logger
 
-  fgaj__logger = fgaj_color_stdout_logger;
+  fgaj__conf->logger = fgaj_color_stdout_logger;
+}
+
+fgaj_conf *fgaj_conf_get()
+{
+  if (fgaj__conf == NULL) fgaj_init();
+  return fgaj__conf;
+}
+
+void fgaj_conf_reset()
+{
+  if (fgaj__conf == NULL) return;
+  if (fgaj__conf->host) free(fgaj__conf->host);
+  free(fgaj__conf);
+  fgaj__conf = NULL;
 }
 
 //
@@ -126,37 +153,17 @@ void fgaj_level_string_free(char *s)
   if (s[0] >= '0' && s[0] <= '9') free(s);
 }
 
-void fgaj_set_logger(fgaj_logger *l)
-{
-  fgaj__logger = l;
-}
-
-void fgaj_set_level(char level)
-{
-  fgaj__level = fgaj_normalize_level(level);
-}
-
-void fgaj_set_params(void *params)
-{
-  fgaj__params = params;
-}
-
-void *fgaj_get_params()
-{
-  return fgaj__params;
-}
-
 //
 // loggers
 
-char *fgaj_red() { return isatty(1) ? "[31m" : ""; }
-char *fgaj_green() { return isatty(1) ? "[32m" : ""; }
-char *fgaj_yellow() { return isatty(1) ? "[33m" : ""; }
-char *fgaj_blue() { return isatty(1) ? "[34m" : ""; }
-char *fgaj_magenta() { return isatty(1) ? "[35m" : ""; }
-char *fgaj_cyan() { return isatty(1) ? "[36m" : ""; }
-char *fgaj_white() { return isatty(1) ? "[37m" : ""; }
-char *fgaj_clear() { return isatty(1) ? "[0m" : ""; }
+static char *fgaj_red() { return isatty(1) ? "[31m" : ""; }
+static char *fgaj_green() { return isatty(1) ? "[32m" : ""; }
+static char *fgaj_yellow() { return isatty(1) ? "[33m" : ""; }
+static char *fgaj_blue() { return isatty(1) ? "[34m" : ""; }
+//static char *fgaj_magenta() { return isatty(1) ? "[35m" : ""; }
+//static char *fgaj_cyan() { return isatty(1) ? "[36m" : ""; }
+static char *fgaj_white() { return isatty(1) ? "[37m" : ""; }
+static char *fgaj_clear() { return isatty(1) ? "[0m" : ""; }
 
 char *fgaj_now()
 {
@@ -166,7 +173,7 @@ char *fgaj_now()
   struct tm *tm;
 
   gettimeofday(&tv, NULL);
-  tm = fgaj__utc ? gmtime(&tv.tv_sec) : localtime(&tv.tv_sec);
+  tm = fgaj__conf->utc ? gmtime(&tv.tv_sec) : localtime(&tv.tv_sec);
 
   char *s = calloc(33, sizeof(char));
   strftime(s, 33, "%F %T.000000 %z", tm);
@@ -189,7 +196,7 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
   printf(
     "%s%s %s%s %s%d/%d %s%5s %s%s %s%s\n",
     fgaj_yellow(), now,
-    fgaj_white(), fgaj__host,
+    fgaj_white(), fgaj__conf->host,
     fgaj_yellow(), getppid(), getpid(),
     lcolor, lstr,
     fgaj_green(), pref, msg,
@@ -205,7 +212,7 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
   char *l = fgaj_level_to_string(level);
   char *s = flu_sprintf("*** %s %s %s", l, pref, msg);
   fgaj_level_string_free(l);
-  fgaj_set_params(s);
+  fgaj__conf->params = s;
 }
 
 
@@ -216,13 +223,13 @@ static void fgaj_do_log(
   char level, const char *pref, const char *format, va_list ap)
 {
   level = fgaj_normalize_level(level);
-  if (level < fgaj__level && level <= 50) return;
+  if (level < fgaj__conf->level && level <= 50) return;
 
   fgaj_init();
 
   char *msg = flu_svprintf(format, ap);
 
-  fgaj__logger(level, pref, msg);
+  fgaj__conf->logger(level, pref, msg);
 
   free(msg);
 }

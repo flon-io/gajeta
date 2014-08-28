@@ -12,13 +12,13 @@ context "logging"
 {
   before each
   {
-    fgaj_set_logger(fgaj_string_logger);
-    fgaj_set_level(10);
-    fgaj_set_params(NULL);
+    fgaj_conf_get()->logger = fgaj_string_logger;
+    fgaj_conf_get()->level = 10;
+    fgaj_conf_get()->params = NULL;
   }
   after each
   {
-    fgaj_set_logger(NULL);
+    fgaj_conf_reset();
   }
 
   describe "fgaj_log()"
@@ -27,24 +27,24 @@ context "logging"
     {
       fgaj_log('d', "flon.nada", "all green");
 
-      ensure(fgaj_get_params() ===f "*** DEBUG flon.nada all green");
+      ensure(fgaj_conf_get()->params ===f "*** DEBUG flon.nada all green");
 
       fgaj_log('i', "flon.nada", "all green");
 
-      ensure(fgaj_get_params() ===f "*** INFO flon.nada all green");
+      ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
     }
 
     it "doesn't log if level < log level"
     {
-      fgaj_set_level(30);
+      fgaj_conf_get()->level = 30;
 
       fgaj_log('d', "flon.nada", "all green");
 
-      ensure(fgaj_get_params() == NULL);
+      ensure(fgaj_conf_get()->params == NULL);
 
       fgaj_log('i', "flon.nada", "all green");
 
-      ensure(fgaj_get_params() ===f "*** INFO flon.nada all green");
+      ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
     }
   }
 }
@@ -53,7 +53,7 @@ describe "fgaj_color_stdout_logger()"
 {
   it "logs"
   {
-    fgaj_set_level(10);
+    fgaj_conf_get()->level = 10;
 
     printf("---8<---\n");
     fgaj_log('t', "flon.nada", "performed an addition");
