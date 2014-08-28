@@ -124,29 +124,16 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
   else if (level <= 20) lcolor = fgaj_blue();
   //
   char *lstr = fgaj_level_to_string(level);
-  //
-  char *lpad = "";
-  if (level == 30 || level == 50)
-  {
-    lpad = " ";
-  }
-  else if (lstr[0] < 'A')
-  {
-    lpad = calloc(6, sizeof(char));
-    size_t lstrl = strlen(lstr);
-    for (int i = 0; i < 5 - lstrl; i++) lpad[i] = ' ';
-  }
 
   printf(
-    "%s%s %d/%d %s%s%s %s%s %s%s\n",
+    "%s%s %d/%d %s%5s %s%s %s%s\n",
     fgaj_yellow(), now, getppid(), getpid(),
-    lcolor, lpad, lstr,
+    lcolor, lstr,
     fgaj_green(), pref, msg,
     fgaj_clear()
   );
 
   free(now);
-  if (lpad[0] == ' ' && lpad[1] == ' ' && lpad[2] != '\0') free(lpad);
   fgaj_level_string_free(lstr);
 }
 
