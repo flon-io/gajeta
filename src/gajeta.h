@@ -70,6 +70,10 @@ void fgaj_i(const char *pref, const char *format, ...);
 void fgaj_e(const char *pref, const char *format, ...);
 void fgaj_w(const char *pref, const char *format, ...);
 
+/* Like fagj_e() but appends ": " and the strerror for the current errno.
+ */
+void fgaj_r(const char *pref, const char *format, ...);
+
 /* Returns a string detailing the current time.
  */
 char *fgaj_now();

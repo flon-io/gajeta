@@ -21,6 +21,8 @@ context "misc"
       ensure(fgaj_normalize_level('i') == 30);
       ensure(fgaj_normalize_level('w') == 40);
       ensure(fgaj_normalize_level('e') == 50);
+
+      ensure(fgaj_normalize_level('r') == 50);
     }
 
     it "leaves numeric levels as is"
@@ -38,6 +40,7 @@ context "misc"
       ensure(fgaj_level_to_string('i') === "INFO");
       ensure(fgaj_level_to_string('w') === "WARN");
       ensure(fgaj_level_to_string('e') === "ERROR");
+      ensure(fgaj_level_to_string('r') === "ERROR");
 
       ensure(fgaj_level_to_string(10) === "TRACE");
       ensure(fgaj_level_to_string(20) === "DEBUG");

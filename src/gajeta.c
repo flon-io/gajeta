@@ -26,9 +26,11 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <time.h>
 #include <sys/time.h>
 
@@ -123,7 +125,7 @@ char fgaj_normalize_level(char level)
   if (level == 'd') return 20;
   if (level == 'i') return 30;
   if (level == 'w') return 40;
-  if (level == 'e') return 50;
+  if (level == 'e' || level == 'r') return 50;
   return level;
 }
 
@@ -158,7 +160,7 @@ static char *fgaj_red() { return fgaj_color() ? "[31m" : ""; }
 static char *fgaj_green() { return fgaj_color() ? "[32m" : ""; }
 static char *fgaj_yellow() { return fgaj_color() ? "[33m" : ""; }
 static char *fgaj_blue() { return fgaj_color() ? "[34m" : ""; }
-static char *fgaj_magenta() { return fgaj_color() ? "[35m" : ""; }
+//static char *fgaj_magenta() { return fgaj_color() ? "[35m" : ""; }
 static char *fgaj_cyan() { return fgaj_color() ? "[36m" : ""; }
 static char *fgaj_white() { return fgaj_color() ? "[37m" : ""; }
 static char *fgaj_clear() { return fgaj_color() ? "[0m" : ""; }
@@ -222,59 +224,68 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
 // logging functions
 
 static void fgaj_do_log(
-  char level, const char *pref, const char *format, va_list ap)
+  char level, const char *pref, const char *format, va_list ap, short err)
 {
   fgaj_init();
 
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  char *msg = flu_svprintf(format, ap);
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_sbvprintf(b, format, ap);
+  if (err) flu_sbprintf(b, ": %s", strerror(errno));
 
-  fgaj__conf->logger(level, pref, msg);
-
-  free(msg);
+  char *s = flu_sbuffer_to_string(b);
+  fgaj__conf->logger(level, pref, s);
+  free(s);
 }
 
 void fgaj_log(char level, const char *pref, const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log(level, pref, format, ap);
+  fgaj_do_log(level, pref, format, ap, tolower(level) == 'r');
   va_end(ap);
 }
 
 void fgaj_t(const char *pref, const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log('t', pref, format, ap);
+  fgaj_do_log('t', pref, format, ap, 0);
   va_end(ap);
 }
 
 void fgaj_d(const char *pref, const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log('d', pref, format, ap);
+  fgaj_do_log('d', pref, format, ap, 0);
   va_end(ap);
 }
 
 void fgaj_i(const char *pref, const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log('i', pref, format, ap);
-  va_end(ap);
-}
-
-void fgaj_e(const char *pref, const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log('e', pref, format, ap);
+  fgaj_do_log('i', pref, format, ap, 0);
   va_end(ap);
 }
 
 void fgaj_w(const char *pref, const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log('w', pref, format, ap);
+  fgaj_do_log('w', pref, format, ap, 0);
+  va_end(ap);
+}
+
+void fgaj_e(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('e', pref, format, ap, 0);
+  va_end(ap);
+}
+
+void fgaj_r(const char *pref, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log('e', pref, format, ap, 1);
   va_end(ap);
 }
 

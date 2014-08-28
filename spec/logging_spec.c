@@ -5,6 +5,8 @@
 // Mon Aug 25 10:47:09 JST 2014
 //
 
+#include <errno.h>
+
 #include "gajeta.h"
 
 
@@ -47,6 +49,41 @@ context "logging"
       ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
     }
   }
+
+  describe "fgaj_r()"
+  {
+    after each
+    {
+      errno = 0;
+    }
+
+    it "appends the strerror() for the current errno"
+    {
+      errno = 1;
+      fgaj_r("flon.testing", "error while reading %s", "book");
+
+      ensure(fgaj_conf_get()->params ===f ""
+        "*** ERROR flon.testing error while reading book"
+        ": Operation not permitted");
+    }
+
+    it "is OK if errno is 0 or negative"
+    {
+      errno = 0;
+      fgaj_r("flon.testing", "zero");
+
+      ensure(fgaj_conf_get()->params ===f ""
+        "*** ERROR flon.testing zero: Success");
+
+      errno = -1;
+      fgaj_r("flon.testing", "nega");
+
+      ((char *)fgaj_conf_get()->params)[43] = '\0';
+
+      ensure(fgaj_conf_get()->params ===f ""
+        "*** ERROR flon.testing nega: Unknown error ");
+    }
+  }
 }
 
 describe "fgaj_color_stdout_logger()"
@@ -61,6 +98,7 @@ describe "fgaj_color_stdout_logger()"
     fgaj_log('i', "flon.nada", "all green");
     fgaj_log('w', "flon.nada", "something is going wrong");
     fgaj_log('e', "flon.nada", "error somewhere");
+    fgaj_log('r', "flon.nada", "error");
     printf("\n");
     fgaj_log(7, "flon.nada", "custom low log level");
     fgaj_log(22, "flon.nada", "custom log level");
