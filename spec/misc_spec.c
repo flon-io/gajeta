@@ -48,5 +48,19 @@ context "misc"
       ensure(fgaj_level_to_string(15) ===f "15");
     }
   }
+
+  describe "fgaj_now()"
+  {
+    it "returns the current time detailed in a string"
+    {
+      char *s = fgaj_now();
+
+      ensure(index(s, '-') == s + 4);
+      ensure(index(s, ':') == s + 13);
+      ensure(index(s, '.') == s + 19);
+
+      free(s);
+    }
+  }
 }
 

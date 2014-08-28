@@ -63,5 +63,9 @@ void fgaj_i(const char *pref, const char *format, ...);
 void fgaj_e(const char *pref, const char *format, ...);
 void fgaj_w(const char *pref, const char *format, ...);
 
+/* Returns a string detailing the current time.
+ */
+char *fgaj_now();
+
 #endif // FLON_GAJETA_H
 
