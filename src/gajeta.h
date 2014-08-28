@@ -37,8 +37,8 @@
 // 10 't' trace
 // 20 'd' debug
 // 30 'i' info
-// 40 'e' error
-// 50 'w' warn
+// 40 'w' warn
+// 50 'e' error
 
 /*
  * Logger function type.
