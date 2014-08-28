@@ -41,7 +41,40 @@
 
 fgaj_logger *fgaj__logger = NULL;
 char fgaj__level = 10;
+short fgaj__utc = 0;
+
 void *fgaj__params = NULL;
+
+static void fgaj_init()
+{
+  if (fgaj__logger != NULL) return;
+
+  char *s = NULL;
+
+  // utc or not ?
+
+  s = getenv("FLON_LOG_UTC");
+  if (s == NULL) s = getenv("FGAJ_UTC");
+  fgaj__utc = (s != NULL && (s[0] == '1' || tolower(s[0]) == 't'));
+
+  // determine level
+
+  fgaj__level = 10;
+
+  s = getenv("FLON_LOG_LEVEL");
+  if (s == NULL) s = getenv("FGAJ_LEVEL");
+
+  if (s != NULL)
+  {
+    if (s[0] > '0' && s[1] < '9') fgaj__level = atoi(s);
+    else fgaj__level = fgaj_normalize_level(s[0]);
+  }
+  //printf("level: %i\n", fgaj__level);
+
+  // determine logger
+
+  fgaj__logger = fgaj_color_stdout_logger;
+}
 
 //
 // misc functions
@@ -109,10 +142,14 @@ char *fgaj_clear() { return isatty(1) ? "[0m" : ""; }
 
 char *fgaj_now()
 {
+  fgaj_init();
+
   struct timeval tv;
   struct tm *tm;
+
   gettimeofday(&tv, NULL);
-  tm = localtime(&tv.tv_sec);
+  tm = fgaj__utc ? gmtime(&tv.tv_sec) : localtime(&tv.tv_sec);
+
   char *s = calloc(33, sizeof(char));
   strftime(s, 33, "%F %T.000000 %z", tm);
   snprintf(s + 20, 7, "%06ld", tv.tv_usec);
@@ -154,29 +191,6 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
 
 //
 // logging functions
-
-void fgaj_init()
-{
-  if (fgaj__logger != NULL) return;
-
-  // determine level
-
-  fgaj__level = 10;
-
-  char *l = getenv("FLON_LOG_LEVEL");
-  if (l == NULL) l = getenv("FGAJ_LEVEL");
-  //
-  if (l != NULL)
-  {
-    if (l[0] > '0' && l[1] < '9') fgaj__level = atoi(l);
-    else fgaj__level = fgaj_normalize_level(l[0]);
-  }
-  //printf("level: %i\n", fgaj__level);
-
-  // determine logger
-
-  fgaj__logger = fgaj_color_stdout_logger;
-}
 
 static void fgaj_do_log(
   char level, const char *pref, const char *format, va_list ap)
