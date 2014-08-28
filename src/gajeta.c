@@ -42,8 +42,17 @@
 fgaj_logger *fgaj__logger = NULL;
 char fgaj__level = 10;
 short fgaj__utc = 0;
+char *fgaj__host = NULL;
 
 void *fgaj__params = NULL;
+
+static char *fgaj_getenv(const char *k0, const char *k1)
+{
+  char *s = getenv(k0);
+  if (s == NULL) s = getenv(k1);
+
+  return s;
+}
 
 static void fgaj_init()
 {
@@ -53,16 +62,25 @@ static void fgaj_init()
 
   // utc or not ?
 
-  s = getenv("FLON_LOG_UTC");
-  if (s == NULL) s = getenv("FGAJ_UTC");
+  s = fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
   fgaj__utc = (s != NULL && (s[0] == '1' || tolower(s[0]) == 't'));
+
+  // determine host
+
+  fgaj__host = fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
+
+  if (fgaj__host == NULL)
+  {
+    char *h = calloc(16, sizeof(char));
+    gethostname(h, 16);
+    fgaj__host = h;
+  }
 
   // determine level
 
   fgaj__level = 10;
 
-  s = getenv("FLON_LOG_LEVEL");
-  if (s == NULL) s = getenv("FGAJ_LEVEL");
+  s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
 
   if (s != NULL)
   {
@@ -169,8 +187,10 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
   char *lstr = fgaj_level_to_string(level);
 
   printf(
-    "%s%s %d/%d %s%5s %s%s %s%s\n",
-    fgaj_yellow(), now, getppid(), getpid(),
+    "%s%s %s%s %s%d/%d %s%5s %s%s %s%s\n",
+    fgaj_yellow(), now,
+    fgaj_white(), fgaj__host,
+    fgaj_yellow(), getppid(), getpid(),
     lcolor, lstr,
     fgaj_green(), pref, msg,
     fgaj_clear()
