@@ -220,10 +220,10 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
 static void fgaj_do_log(
   char level, const char *pref, const char *format, va_list ap)
 {
+  fgaj_init();
+
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
-
-  fgaj_init();
 
   char *msg = flu_svprintf(format, ap);
 
