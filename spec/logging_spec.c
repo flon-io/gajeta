@@ -14,6 +14,7 @@ context "logging"
   {
     fgaj_set_logger(fgaj_string_logger);
     fgaj_set_level(10);
+    fgaj_set_params(NULL);
   }
   after each
   {
@@ -39,7 +40,7 @@ context "logging"
 
       fgaj_log('d', "flon.nada", "all green");
 
-      ensure(fgaj_get_params() === "");
+      ensure(fgaj_get_params() == NULL);
 
       fgaj_log('i', "flon.nada", "all green");
 
