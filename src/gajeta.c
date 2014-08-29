@@ -228,6 +228,8 @@ static void fgaj_do_log(
 {
   fgaj_init();
 
+  if (fgaj__conf->logger == NULL) return;
+
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 

@@ -84,6 +84,19 @@ context "logging"
         "*** ERROR flon.testing nega: Unknown error ");
     }
   }
+
+  context "when fgaj_conf()->logger is null"
+  {
+    it "doesn't log"
+    {
+      fgaj_conf_get()->logger = NULL;
+      fgaj_conf_get()->params = NULL;
+
+      fgaj_log('w', "flon.nada", "all green");
+
+      ensure(fgaj_conf_get()->params == NULL);
+    }
+  }
 }
 
 describe "fgaj_color_stdout_logger()"
