@@ -23,15 +23,15 @@ context "logging"
     fgaj_conf_reset();
   }
 
-  describe "fgaj_log()"
+  describe "fgaj_ll()"
   {
     it "logs"
     {
-      fgaj_log('d', "flon.nada", "all green");
+      fgaj_ll('d', "flon.nada", "all green");
 
       ensure(fgaj_conf_get()->params ===f "*** DEBUG flon.nada all green");
 
-      fgaj_log('i', "flon.nada", "all green");
+      fgaj_ll('i', "flon.nada", "all green");
 
       ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
     }
@@ -40,11 +40,11 @@ context "logging"
     {
       fgaj_conf_get()->level = 30;
 
-      fgaj_log('d', "flon.nada", "all green");
+      fgaj_ll('d', "flon.nada", "all green");
 
       ensure(fgaj_conf_get()->params == NULL);
 
-      fgaj_log('i', "flon.nada", "all green");
+      fgaj_ll('i', "flon.nada", "all green");
 
       ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
     }
@@ -60,7 +60,7 @@ context "logging"
     it "appends the strerror() for the current errno"
     {
       errno = 1;
-      fgaj_r("flon.testing", "error while reading %s", "book");
+      fgaj_ll('r', "flon.testing", "error while reading %s", "book");
 
       ensure(fgaj_conf_get()->params ===f ""
         "*** ERROR flon.testing error while reading book"
@@ -70,13 +70,13 @@ context "logging"
     it "is OK if errno is 0 or negative"
     {
       errno = 0;
-      fgaj_r("flon.testing", "zero");
+      fgaj_ll('r', "flon.testing", "zero");
 
       ensure(fgaj_conf_get()->params ===f ""
         "*** ERROR flon.testing zero: Success");
 
       errno = -1;
-      fgaj_r("flon.testing", "nega");
+      fgaj_ll('r', "flon.testing", "nega");
 
       ((char *)fgaj_conf_get()->params)[43] = '\0';
 
@@ -92,7 +92,7 @@ context "logging"
       fgaj_conf_get()->logger = NULL;
       fgaj_conf_get()->params = NULL;
 
-      fgaj_log('w', "flon.nada", "all green");
+      fgaj_ll('w', "flon.nada", "all green");
 
       ensure(fgaj_conf_get()->params == NULL);
     }
@@ -106,32 +106,21 @@ describe "fgaj_color_stdout_logger()"
     fgaj_conf_get()->level = 5;
 
     printf("---8<---\n");
-    fgaj_log('t', "flon.nada", "performed an addition");
-    fgaj_log('d', "flon.nada", "all green");
-    fgaj_log('i', "flon.nada", "all green");
-    fgaj_log('w', "flon.nada", "something is going wrong");
-    fgaj_log('e', "flon.nada", "error somewhere");
-    fgaj_log('r', "flon.nada", "error");
+    fgaj_t("performed an addition %i %s", 1, "nada");
+    fgaj_t("performed an addition");
+    fgaj_d("all green");
+    fgaj_i("all green");
+    fgaj_w("something is going wrong");
+    fgaj_e("error somewhere");
+    fgaj_r("error");
     printf("\n");
-    fgaj_log(7, "flon.nada", "custom low log level");
-    fgaj_log(22, "flon.nada", "custom log level");
+    fgaj_l(7, "custom low log level");
+    fgaj_l(22, "custom log level");
+    printf("\n");
+    fgaj_ll('e', "flon.testing", "custom subject");
     printf("--->8---\n");
 
     ensure(1 == 1);
-  }
-}
-
-describe "__flf macro"
-{
-  it "outputs __FILE__:__LINE__:__func__"
-  {
-    fgaj_conf_get()->logger = fgaj_string_logger;
-    fgaj_conf_get()->params = NULL;
-
-    fgaj_i(__flf, "no eny in sight");
-
-    ensure(fgaj_conf_get()->params ===f ""
-      "*** INFO s.c:831:it_19 no eny in sight");
   }
 }
 
