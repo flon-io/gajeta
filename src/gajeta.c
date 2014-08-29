@@ -198,12 +198,13 @@ void fgaj_color_stdout_logger(char level, const char *pref, const char *msg)
   char *lstr = fgaj_level_to_string(level);
 
   printf(
-    "%s%s %s%s %s%d/%d %s%5s %s%s %s%s\n",
+    "%s%s %s%s %s%d/%d %s%5s %s%s %s%s%s\n",
     fgaj_yellow(), now,
     fgaj_white(), fgaj__conf->host,
     fgaj_yellow(), getppid(), getpid(),
     lcolor, lstr,
-    fgaj_green(), pref, msg,
+    fgaj_green(), pref,
+    fgaj_white(), msg,
     fgaj_clear()
   );
 
