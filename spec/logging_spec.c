@@ -121,3 +121,17 @@ describe "fgaj_color_stdout_logger()"
   }
 }
 
+describe "__flf macro"
+{
+  it "outputs __FILE__:__LINE__:__func__"
+  {
+    fgaj_conf_get()->logger = fgaj_string_logger;
+    fgaj_conf_get()->params = NULL;
+
+    fgaj_i(__flf, "no eny in sight");
+
+    ensure(fgaj_conf_get()->params ===f ""
+      "*** INFO s.c:831:it_19 no eny in sight");
+  }
+}
+

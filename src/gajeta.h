@@ -31,8 +31,12 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "flutil.h"
+
 
 #define FGAJ_VERSION "1.0.0"
+
+#define __flf flu_sprintf("%s:%i:%s", __FILE__, __LINE__, __func__)
 
 // 10 't' trace
 // 20 'd' debug
