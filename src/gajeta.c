@@ -100,8 +100,8 @@ static void fgaj_init()
   // determine logger
 
   fgaj__conf->logger = fgaj_color_file_logger;
-
-  //fgaj__conf->params = stderr;
+  //
+  //fgaj__conf->params = stdout;
   fgaj__conf->params = NULL;
 }
 
@@ -173,14 +173,14 @@ static short fgaj_color(FILE *f)
   return isatty(fileno(f));
 }
 
-static char *fgaj_red(FILE *f) { return fgaj_color(f) ? "[0;31m" : ""; }
-static char *fgaj_green(FILE *f) { return fgaj_color(f) ? "[0;32m" : ""; }
-static char *fgaj_brown(FILE *f) { return fgaj_color(f) ? "[0;33m" : ""; }
-static char *fgaj_blue(FILE *f) { return fgaj_color(f) ? "[0;34m" : ""; }
-static char *fgaj_cyan(FILE *f) { return fgaj_color(f) ? "[0;36m" : ""; }
-static char *fgaj_white(FILE *f) { return fgaj_color(f) ? "[0;37m" : ""; }
-static char *fgaj_yellow(FILE *f) { return fgaj_color(f) ? "[1;33m" : ""; }
-static char *fgaj_clear(FILE *f) { return fgaj_color(f) ? "[0;0m" : ""; }
+static char *fgaj_red(int c) { return c ? "[0;31m" : ""; }
+static char *fgaj_green(int c) { return c ? "[0;32m" : ""; }
+static char *fgaj_brown(int c) { return c ? "[0;33m" : ""; }
+static char *fgaj_blue(int c) { return c ? "[0;34m" : ""; }
+static char *fgaj_cyan(int c) { return c ? "[0;36m" : ""; }
+static char *fgaj_white(int c) { return c ? "[0;37m" : ""; }
+static char *fgaj_yellow(int c) { return c ? "[1;33m" : ""; }
+static char *fgaj_clear(int c) { return c ? "[0;0m" : ""; }
 
 char *fgaj_now()
 {
@@ -205,28 +205,30 @@ void fgaj_color_file_logger(char level, const char *pref, const char *msg)
   char *now = fgaj_now();
 
   FILE *f = (FILE *)fgaj__conf->params;
-  if (f == NULL) f = stderr;
+  if (f == NULL) f = stdout;
+
+  int c = fgaj_color(f);
 
   char *lcolor = NULL;
-  if (level >= 50) lcolor = fgaj_red(f);          // error
-  else if (level >= 40) lcolor = fgaj_yellow(f);  // warn
-  else if (level >= 30) lcolor = fgaj_white(f);   // info
-  else if (level >= 20) lcolor = fgaj_cyan(f);    // debug
-  else if (level >= 10) lcolor = fgaj_green(f);   // trace
-  else lcolor = fgaj_blue(f);                     // ...
+  if (level >= 50) lcolor = fgaj_red(c);          // error
+  else if (level >= 40) lcolor = fgaj_yellow(c);  // warn
+  else if (level >= 30) lcolor = fgaj_white(c);   // info
+  else if (level >= 20) lcolor = fgaj_cyan(c);    // debug
+  else if (level >= 10) lcolor = fgaj_green(c);   // trace
+  else lcolor = fgaj_blue(c);                     // ...
 
   char *lstr = fgaj_level_to_string(level);
 
   fprintf(
     f,
     "%s%s %s%s %s%d/%d %s%5s %s%s %s%s%s\n",
-    fgaj_brown(f), now,
-    fgaj_white(f), fgaj__conf->host,
-    fgaj_brown(f), getppid(), getpid(),
+    fgaj_brown(c), now,
+    fgaj_white(c), fgaj__conf->host,
+    fgaj_brown(c), getppid(), getpid(),
     lcolor, lstr,
-    fgaj_green(f), pref,
-    fgaj_white(f), msg,
-    fgaj_clear(f)
+    fgaj_green(c), pref,
+    fgaj_white(c), msg,
+    fgaj_clear(c)
   );
 
   free(now);
