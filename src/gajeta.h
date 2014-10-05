@@ -76,7 +76,7 @@ void fgaj_conf_reset();
 
 /* Default logger function.
  */
-void fgaj_color_stdout_logger(
+void fgaj_color_file_logger(
   char level, const char *subject, const char *msg);
 
 /* Simple logger function. Used for testing.

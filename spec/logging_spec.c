@@ -99,7 +99,7 @@ context "logging"
   }
 }
 
-describe "fgaj_color_stdout_logger()"
+describe "fgaj_color_file_logger()"
 {
   it "logs"
   {
