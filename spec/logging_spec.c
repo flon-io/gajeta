@@ -16,6 +16,7 @@ context "logging"
   {
     fgaj_conf_get()->logger = fgaj_string_logger;
     fgaj_conf_get()->level = 10;
+    fgaj_conf_get()->out = NULL;
     fgaj_conf_get()->params = NULL;
   }
   after each
@@ -29,11 +30,11 @@ context "logging"
     {
       fgaj_ll('d', "flon.nada", "all green");
 
-      ensure(fgaj_conf_get()->params ===f "*** DEBUG flon.nada all green");
+      ensure(fgaj_conf_get()->out ===f "*** DEBUG flon.nada all green");
 
       fgaj_ll('i', "flon.nada", "all green");
 
-      ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
+      ensure(fgaj_conf_get()->out ===f "*** INFO flon.nada all green");
     }
 
     it "doesn't log if level < log level"
@@ -42,11 +43,11 @@ context "logging"
 
       fgaj_ll('d', "flon.nada", "all green");
 
-      ensure(fgaj_conf_get()->params == NULL);
+      ensure(fgaj_conf_get()->out == NULL);
 
       fgaj_ll('i', "flon.nada", "all green");
 
-      ensure(fgaj_conf_get()->params ===f "*** INFO flon.nada all green");
+      ensure(fgaj_conf_get()->out ===f "*** INFO flon.nada all green");
     }
   }
 
@@ -62,7 +63,7 @@ context "logging"
       errno = 1;
       fgaj_ll('r', "flon.testing", "error while reading %s", "book");
 
-      ensure(fgaj_conf_get()->params ===f ""
+      ensure(fgaj_conf_get()->out ===f ""
         "*** ERROR flon.testing error while reading book"
         ": Operation not permitted");
     }
@@ -72,15 +73,15 @@ context "logging"
       errno = 0;
       fgaj_ll('r', "flon.testing", "zero");
 
-      ensure(fgaj_conf_get()->params ===f ""
+      ensure(fgaj_conf_get()->out ===f ""
         "*** ERROR flon.testing zero: Success");
 
       errno = -1;
       fgaj_ll('r', "flon.testing", "nega");
 
-      ((char *)fgaj_conf_get()->params)[43] = '\0';
+      ((char *)fgaj_conf_get()->out)[43] = '\0';
 
-      ensure(fgaj_conf_get()->params ===f ""
+      ensure(fgaj_conf_get()->out ===f ""
         "*** ERROR flon.testing nega: Unknown error ");
     }
   }
@@ -90,11 +91,12 @@ context "logging"
     it "doesn't log"
     {
       fgaj_conf_get()->logger = NULL;
+      fgaj_conf_get()->out = NULL;
       fgaj_conf_get()->params = NULL;
 
       fgaj_ll('w', "flon.nada", "all green");
 
-      ensure(fgaj_conf_get()->params == NULL);
+      ensure(fgaj_conf_get()->out == NULL);
     }
   }
 }
