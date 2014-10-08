@@ -216,9 +216,22 @@ char *flu_sprintf(const char *format, ...)
 //
 // readall
 
-char *flu_readall(const char *path)
+char *flu_readall(const char *path, ...)
 {
-  FILE *in = fopen(path, "r");
+  va_list ap; va_start(ap, path);
+  char *s = flu_vreadall(path, ap);
+  va_end(ap);
+
+  return s;
+}
+
+char *flu_vreadall(const char *path, va_list ap)
+{
+  char *spath = flu_svprintf(path, ap);
+
+  FILE *in = fopen(spath, "r");
+
+  free(spath);
 
   if (in == NULL) return NULL;
 
@@ -233,13 +246,15 @@ char *flu_freadall(FILE *in)
   if (in == NULL) return NULL;
 
   flu_sbuffer *b = flu_sbuffer_malloc();
-  char rb[1024];
+  char rb[4096];
 
   while (1)
   {
-    size_t s = fread(rb, 1024, 1, in);
+    size_t s = fread(rb, sizeof(char), 4096, in);
 
-    if (s == 0)
+    if (s > 0) flu_sbputs_n(b, rb, s);
+
+    if (s < 4096)
     {
       if (feof(in) == 1) break;
 
@@ -247,11 +262,28 @@ char *flu_freadall(FILE *in)
       flu_sbuffer_free(b);
       return NULL;
     }
-
-    flu_sbputs(b, rb);
   }
 
   return flu_sbuffer_to_string(b);
+}
+
+int flu_writeall(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *spath = flu_svprintf(path, ap);
+  char *format = va_arg(ap, char *);
+
+  FILE *f = fopen(spath, "w");
+  if (f == NULL) return 0;
+
+  free(spath);
+
+  vfprintf(f, format, ap);
+  if (fclose(f) != 0) return 0;
+
+  va_end(ap);
+
+  return 1;
 }
 
 

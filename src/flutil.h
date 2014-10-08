@@ -142,12 +142,20 @@ char *flu_sprintf(const char *format, ...);
 /* Given a path, reads the content of the path in a new string.
  * Returns NULL if reading failed for any reason.
  */
-char *flu_readall(const char *path);
+char *flu_readall(const char *path, ...);
+
+char *flu_vreadall(const char *path, va_list ap);
 
 /* Given a file, reads all its content to a new string.
  * Returns NULL if reading failed for any reason.
  */
 char *flu_freadall(FILE *in);
+
+/* Writes a file to disk.
+ * Returns 1 when successful.
+ * Useful when setting up test files
+ */
+int flu_writeall(const char *path, ...);
 
 
 //
