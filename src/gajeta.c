@@ -200,12 +200,20 @@ char *fgaj_now()
   return s;
 }
 
+static FILE *fgaj_determine_out_file(FILE *def)
+{
+  FILE *f = (FILE *)fgaj__conf->params;
+
+  if (f) return f;
+  if (f == NULL && def != NULL) return def;
+  return stdout;
+}
+
 void fgaj_color_file_logger(char level, const char *pref, const char *msg)
 {
   char *now = fgaj_now();
 
-  FILE *f = (FILE *)fgaj__conf->params;
-  if (f == NULL) f = stdout;
+  FILE *f = fgaj_determine_out_file(stdout);
 
   int c = fgaj_color(f);
 
@@ -245,9 +253,11 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
 
 void fgaj_grey_logger(char level, const char *pref, const char *msg)
 {
+  FILE *f = fgaj_determine_out_file(stdout);
+
   char *lstr = fgaj_level_to_string(level);
 
-  printf("[1;30m%19s %-38s %s[0;0m\n", lstr, pref, msg);
+  fprintf(f, "[1;30m%19s %-38s %s[0;0m\n", lstr, pref, msg);
 
   fgaj_level_string_free(lstr);
 }
