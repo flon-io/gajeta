@@ -124,3 +124,20 @@ describe "fgaj_color_file_logger()"
   }
 }
 
+describe "fgaj_grey_logger()"
+{
+  it "logs"
+  {
+    fgaj_conf_get()->logger = fgaj_grey_logger;
+    fgaj_conf_get()->level = 5;
+
+    printf("---8<---\n");
+    fgaj_t("performed a substraction %i %s", 1, "nada");
+    fgaj_d("all grey");
+    fgaj_i("all grey");
+    printf("--->8---\n");
+
+    ensure(1 == 1);
+  }
+}
+

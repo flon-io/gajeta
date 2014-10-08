@@ -243,6 +243,15 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
   fgaj__conf->params = s;
 }
 
+void fgaj_grey_logger(char level, const char *pref, const char *msg)
+{
+  char *lstr = fgaj_level_to_string(level);
+
+  printf("[1;30m%19s %-38s %s[0;0m\n", lstr, pref, msg);
+
+  fgaj_level_string_free(lstr);
+}
+
 
 //
 // logging functions
