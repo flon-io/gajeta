@@ -146,7 +146,7 @@ describe "fgaj_grey_logger()"
   {
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
-    fgaj_conf_get()->params = flu_d("indent", 2, "pwidth", 44, NULL);
+    fgaj_conf_get()->params = flu_d("indent", 2, NULL);
 
     printf("---8<---\n");
     fgaj_t("performed a substraction %i %s", 1, "nada");

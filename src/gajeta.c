@@ -264,20 +264,17 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
   if (isatty(fileno(f)) != 1) { cgrey = ""; cclear = ""; }
 
   int indent = 10;
-  int pwidth = 21;
   //
   if (fgaj__conf->params)
   {
     indent = flu_list_get(fgaj__conf->params, "indent");
-    pwidth = flu_list_get(fgaj__conf->params, "pwidth");
     if (indent < 0) indent = 0;
-    if (pwidth < 0) pwidth = 0;
   }
 
   fprintf(
     f,
     "%s%*s %-*s %s%s\n",
-    cgrey, indent + 9, lstr, pwidth, pref, msg, cclear);
+    cgrey, indent + 6, lstr, 0, pref, msg, cclear);
 
   fgaj_level_string_free(lstr);
 }
