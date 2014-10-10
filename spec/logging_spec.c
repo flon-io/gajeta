@@ -142,13 +142,11 @@ describe "fgaj_grey_logger()"
     ensure(1 == 1);
   }
 
-  it "accepts a flu_dict in fgaj_conf_get()->params"
+  it "accepts a char* param in fgaj_conf_get()->params"
   {
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
-
-    fgaj_conf_get()->params =
-      flu_d("indent", (void *)2, "pid", (void *)1, NULL);
+    fgaj_conf_get()->params = "2p";
 
     printf("---8<---\n");
     fgaj_t("performed a substraction %i %s", 1, "nada");
