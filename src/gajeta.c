@@ -87,13 +87,8 @@ static void fgaj_init()
   fgaj__conf->level = 30;
 
   s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
-  //
-  if (s != NULL)
-  {
-    if (s[0] > '0' && s[1] < '9') fgaj__conf->level = atoi(s);
-    else fgaj__conf->level = fgaj_normalize_level(s[0]);
-  }
-  //printf("level: %i\n", fgaj__level);
+  if (s != NULL) fgaj__conf->level = fgaj_parse_level(s);
+  //printf("level: %i\n", fgaj__conf->level);
 
   // determine logger
 
