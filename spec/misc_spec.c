@@ -31,6 +31,33 @@ context "misc"
     }
   }
 
+  describe "fgaj_parse_level()"
+  {
+    it "turns a string to a log level"
+    {
+      ensure(fgaj_parse_level("trace") == 10);
+      ensure(fgaj_parse_level("tRace") == 10);
+      ensure(fgaj_parse_level("TRACE") == 10);
+      ensure(fgaj_parse_level("t") == 10);
+
+      ensure(fgaj_parse_level("d") == 20);
+      ensure(fgaj_parse_level("debug") == 20);
+
+      ensure(fgaj_parse_level("i") == 30);
+      ensure(fgaj_parse_level("info") == 30);
+
+      ensure(fgaj_parse_level("w") == 40);
+      ensure(fgaj_parse_level("warn") == 40);
+
+      ensure(fgaj_parse_level("e") == 50);
+      ensure(fgaj_parse_level("r") == 50);
+      ensure(fgaj_parse_level("error") == 50);
+
+      ensure(fgaj_parse_level("10") == 10);
+      ensure(fgaj_parse_level("30") == 30);
+    }
+  }
+
   describe "fgaj_level_to_string()"
   {
     it "turns a char level into a string"
