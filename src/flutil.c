@@ -29,13 +29,17 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <libgen.h>
+#include <errno.h>
 
 #include "flutil.h"
 
 
 // flutil.c
+
 
 //
 // str functions
@@ -99,6 +103,24 @@ ssize_t flu_rindex(const char *s, ssize_t off, char c)
     if (i < 1) break;
   }
   return -1;
+}
+
+flu_list *flu_split(const char *s, const char *delim)
+{
+  size_t dl = strlen(delim);
+  flu_list *r = flu_list_malloc();
+
+  for (char *n = NULL; ; )
+  {
+    n = strstr(s, delim);
+
+    if (n == NULL) { flu_list_add(r, strdup(s)); break; }
+
+    flu_list_add(r, strndup(s, n - s));
+    s = n + dl;
+  }
+
+  return r;
 }
 
 //
@@ -205,9 +227,7 @@ char *flu_svprintf(const char *format, va_list ap)
 char *flu_sprintf(const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-
   char *s = flu_svprintf(format, ap);
-
   va_end(ap);
 
   return s;
@@ -284,6 +304,182 @@ int flu_writeall(const char *path, ...)
   va_end(ap);
 
   return 1;
+}
+
+
+//
+// "path" functions
+
+int flu_unlink(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *spath = flu_svprintf(path, ap);
+  va_end(ap);
+
+  int r = unlink(spath);
+
+  free(spath);
+
+  return r;
+}
+
+char *flu_canopath(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_svprintf(path, ap);
+  va_end(ap);
+
+  if (s[0] != '/')
+  {
+    char *cwd = getcwd(NULL, 0);
+    char *ss = flu_sprintf("%s/%s", cwd, s);
+    free(cwd);
+    free(s);
+    s = ss;
+  }
+
+  char *r = calloc(strlen(s) + 1, sizeof(char));
+  *r = '/';
+  char *rr = r + 1;
+
+  char *a = s + 1;
+  char *b = NULL;
+
+  while (1)
+  {
+    b = strchr(a, '/');
+
+    size_t l = b ? b + 1 - a : strlen(a);
+
+    size_t dots = 0;
+    if (l == 2 && strncmp(a, "./", 2) == 0) dots = 1;
+    else if (l == 1 && strncmp(a, "/", 1) == 0) dots = 1;
+    else if (l == 1 && strncmp(a, ".\0", 2) == 0) dots = 1;
+    else if (l >= 2 && strncmp(a, "..", 2) == 0) dots = 2;
+
+    if (dots == 2 && rr > r + 1)
+    {
+      *(rr - 1) = 0;
+      rr = strrchr(r, '/');
+      rr = rr ? rr + 1 : r + 1;
+    }
+    else if (dots < 1)
+    {
+      strncpy(rr, a, l);
+      rr = rr + l;
+    }
+    *rr = 0;
+
+    if (b == NULL) break;
+
+    a = b + 1;
+  }
+
+  free(s);
+
+  return r;
+}
+
+char *flu_dirname(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_svprintf(path, ap);
+  va_end(ap);
+
+  char *dn = dirname(s);
+  char *ddn = strdup(dn);
+  free(s);
+
+  return ddn;
+}
+
+char *flu_basename(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_svprintf(path, ap);
+  char *new_suffix = va_arg(ap, char *);
+  va_end(ap);
+
+  if (new_suffix && *new_suffix != '.') { free(s); return NULL; }
+
+  char *bn = basename(s);
+  char *dbn = strdup(bn);
+  free(s);
+
+  if (new_suffix) strcpy(strrchr(dbn, '.'), new_suffix);
+
+  return dbn;
+}
+
+char flu_fstat(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  va_end(ap);
+
+  struct stat s;
+  int r = stat(p, &s);
+  free(p);
+
+  if (r == 0) return S_ISDIR(s.st_mode) ? 'd' : 'f';
+  else return 0;
+}
+
+int flu_move(const char *orig, ...)
+{
+  va_list ap; va_start(ap, orig);
+  char *ori = flu_svprintf(orig, ap);
+
+  if (flu_fstat(ori) == 0) { free(ori); return 1; }
+
+  char *dest = va_arg(ap, char *);
+  char *des = flu_svprintf(dest, ap);
+  va_end(ap);
+
+  char *np = des;
+
+  if (flu_fstat(des) == 'd')
+  {
+    char *ob = strdup(ori);
+    char *obn = basename(ob);
+    np = flu_sprintf("%s/%s", des, obn);
+    free(ob);
+  }
+
+  int r = rename(ori, np);
+
+  free(ori);
+  free(des);
+  if (np != des) free(np);
+
+  return r;
+}
+
+int flu_mkdir_p(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  int mode = va_arg(ap, int);
+  va_end(ap);
+
+  int r = 0;
+  char *pp = NULL;
+
+  for (char *b = p; ; )
+  {
+    b = strstr(b, "/");
+    pp = b ? strndup(p, b - p) : strdup(p);
+    r = mkdir(pp, mode);
+    if (r != 0 && (errno != EEXIST || flu_fstat(pp) == 'f')) break;
+    free(pp); pp = NULL;
+    if (b == NULL) { r = 0; errno = 0; break; }
+    ++b;
+  }
+
+  if (pp) free(pp);
+  free(p);
+
+  return r;
 }
 
 
@@ -586,6 +782,50 @@ char *flu_n_unescape(const char *s, size_t n)
   return d;
 }
 
+char *flu_urlencode(const char *s, ssize_t n)
+{
+  if (n < 0) n = strlen(s);
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    char c = s[i];
+
+    if (
+      (c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z') ||
+      (c >= '0' && c <= '9') ||
+      c == '-' || c == '_' || c == '.' || c == '~'
+    )
+      flu_sbputc(b, c);
+    else
+      flu_sbprintf(b, "%%%02x", c);
+  }
+
+  return flu_sbuffer_to_string(b);
+}
+
+char *flu_urldecode(const char *s, ssize_t n)
+{
+  if (n < 0) n = strlen(s);
+
+  char *r = calloc(n + 1, sizeof(char));
+
+  for (size_t i = 0, j = 0; i < n; ++j)
+  {
+    if (s[i] != '%') { r[j] = s[i++]; continue; }
+
+    char *code = strndup(s + i + 1, 2);
+    char c = strtol(code, NULL, 16);
+    free(code);
+    i = i + 3;
+    r[j] = c;
+  }
+
+  return r;
+}
+
 
 //
 // misc
@@ -614,20 +854,28 @@ char *flu_strdup(char *s)
   int l = strlen(s);
   char *r = calloc(l + 1, sizeof(char));
   strcpy(r, s);
+
   return r;
 }
 
-long long flu_getms()
+int flu_system(const char *cmd, ...)
 {
-  struct timeval tv;
-  int r = gettimeofday(&tv, NULL);
-  return r == 0 ? tv.tv_sec * 1000 + tv.tv_usec / 1000 : 0;
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+
+  int r = system(c);
+
+  free(c);
+
+  return r;
 }
 
-long long flu_getMs()
+long long flu_stoll(char *s, size_t l, int base)
 {
-  struct timeval tv;
-  int r = gettimeofday(&tv, NULL);
-  return r == 0 ? tv.tv_sec * 1000000 + tv.tv_usec : 0;
+  char *ss = strndup(s, l);
+  long long r = strtoll(ss, NULL, base);
+  free(ss);
+  //printf("flu_stoll() >%s< in >%s< --> %li\n", s, strndup(s, l), r);
+
+  return r;
 }
 
