@@ -120,6 +120,7 @@ describe "fgaj_color_file_logger()"
     fgaj_l(22, "custom log level");
     printf("\n");
     fgaj_ll('e', "flon.testing", "custom subject");
+    errno = EACCES; fgaj_tr("it's irrelevant, but"); errno = 0;
     printf("--->8---\n");
 
     ensure(1 == 1);
@@ -137,6 +138,7 @@ describe "fgaj_grey_logger()"
     fgaj_t("performed a substraction %i %s", 1, "nada");
     fgaj_d("all grey");
     fgaj_i("all grey");
+    errno = EACCES; fgaj_tr("it's irrelevant, but"); errno = 0;
     printf("--->8---\n");
 
     ensure(1 == 1);
