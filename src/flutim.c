@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <locale.h>
 
 #include "flutil.h"
 #include "flutim.h"
@@ -113,7 +114,7 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     ts = &tss;
   }
 
-  if (format == 'z' || format == 'Z') utc = 1;
+  if (strchr("zZrgT", format)) utc = 1;
 
   struct tm *tm = utc ? gmtime(&ts->tv_sec) : localtime(&ts->tv_sec);
 
@@ -126,10 +127,28 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     strftime(r, 32, "%Y-%m-%dT%H:%M:%SZ", tm);
     return r;
   }
+  if (format == 'T')
+  {
+    strftime(r, 32, "%Y%m%dT%H%M%SZ", tm);
+    return r;
+  }
+  if (format == 'r' || format == 'g' || format == '2')
+  {
+    char *loc = strdup(setlocale(LC_TIME, NULL)); setlocale(LC_TIME, "en_US");
+    //
+    if (format == '2') strftime(r, 32, "%a, %d %b %Y %T %z", tm);
+    else strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
+    //
+    setlocale(LC_TIME, loc); free(loc);
+
+    if (format == 'g') strcpy(r + strlen(r) - 3, "GMT");
+    return r;
+  }
 
   strftime(r, 32, "%Y%m%d.%H%M%S", tm);
   size_t l = strlen(r);
 
+  if (format == 'd') { *(r + l - 7) = '\0'; return r; }
   if (format == 'h') { *(r + l - 2) = '\0'; return r; }
   if (format == 's') { return r; }
 
@@ -145,6 +164,15 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
   *(r + l + 1 + off) = '\0';
 
   return r;
+}
+
+char *flu_sstamp(long long s, int utc, char format)
+{
+  if (s == 0) return flu_tstamp(NULL, utc, format);
+
+  struct timespec ts; ts.tv_sec = s; ts.tv_nsec = 0;
+
+  return flu_tstamp(&ts, utc, format);
 }
 
 static int ptime(char *s, struct tm *tm)
@@ -179,7 +207,7 @@ static int ptime(char *s, struct tm *tm)
 
 struct timespec *flu_parse_tstamp(char *s, int utc)
 {
-  struct tm tm = {};
+  struct tm tm;
   char *subseconds = NULL;
 
   if (strchr(s, '-'))
@@ -252,7 +280,7 @@ struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0)
 
 char *flu_ts_to_s(struct timespec *ts, char format)
 {
-  char *r = calloc(10 + 1 + 9 + 1, sizeof(char));
+  char *r = calloc(21 + 1 + 9 + 1, sizeof(char));
 
   snprintf(r, 20, "%lis%09li", ts->tv_sec, ts->tv_nsec);
 
@@ -262,6 +290,45 @@ char *flu_ts_to_s(struct timespec *ts, char format)
   else if (format == 'u') off = 6;
   //
   if (off > -1) *(strchr(r, 's') + 1 + off) = '\0';
+
+  return r;
+}
+
+char *flu_ts_to_hs(struct timespec *ts, char format)
+{
+  char *r = calloc(42 + 1 + 9 + 1, sizeof(char));
+  char *rr = r;
+
+  // sec and above
+
+  long l;
+  long s = ts->tv_sec;
+
+  l = s / (7 * 24 * 60 * 60); s = s % (7 * 24 * 60 * 60);
+  if (l > 0) rr += sprintf(rr, "%liw", l);
+
+  l = s / (24 * 60 * 60); s = s % (24 * 60 * 60);
+  if (l > 0) rr += sprintf(rr, "%lid", l);
+
+  l = s / (60 * 60); s = s % (60 * 60);
+  if (l > 0) rr += sprintf(rr, "%lih", l);
+
+  l = s / (60); s = s % (60);
+  if (l > 0) rr += sprintf(rr, "%lim", l);
+
+  if (s > 0) rr += sprintf(rr, "%lis", s);
+  else if (rr == r || format != 's') rr += sprintf(rr, "0s");
+
+  // subsec
+
+  snprintf(rr, 10, "%09li", ts->tv_nsec);
+
+  ssize_t off = -1;
+  if (format == 's') off = 0;
+  else if (format == 'm') off = 3;
+  else if (format == 'u') off = 6;
+  //
+  if (off > -1) *(rr + off) = '\0';
 
   return r;
 }
@@ -326,6 +393,10 @@ struct timespec *flu_parse_ts(const char *s)
 
       prev = c;
     }
+    else if (c == ' ')
+    {
+      // ignore
+    }
     else
     {
       free(ss); free(ts); return NULL;
@@ -339,6 +410,8 @@ struct timespec *flu_parse_ts(const char *s)
 
 long long flu_parse_t(const char *s)
 {
+  errno = 0;
+
   struct timespec *ts = flu_parse_ts(s);
   if (ts == NULL) { errno = EINVAL; return 0; }
 
@@ -348,3 +421,21 @@ long long flu_parse_t(const char *s)
   return r;
 }
 
+double flu_parse_d(const char *s)
+{
+  errno = 0;
+
+  struct timespec *ts = flu_parse_ts(s);
+  if (ts == NULL) { errno = EINVAL; return 0.0; }
+
+  double r = ts->tv_sec + (double)ts->tv_nsec / 1000000000;
+  free(ts);
+
+  return r;
+}
+
+//commit 0eac13d402e3a06f15c3e850830b4f6bf0f9af57
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Fri Jan 9 11:26:34 2015 +0900
+//
+//    implement flu_ts_to_hs()
