@@ -308,11 +308,8 @@ static void fgaj_do_log(
 
   b = flu_sbuffer_malloc();
   flu_sbputs(b, file);
-  if (line > -1)
-  {
-    flu_sbprintf(b, ":%d", line);
-    if (func != NULL) flu_sbprintf(b, ":%s", func);
-  }
+  if (line > -1) flu_sbprintf(b, ":%d", line);
+  if (func != NULL) flu_sbprintf(b, ":%s", func);
   //
   char *subject = flu_sbuffer_to_string(b);
 
