@@ -165,11 +165,11 @@ char fgaj_parse_level(char *s)
 // "subjecters"
 
 ssize_t fgaj_default_subjecter(
-  char *buffer,
+  char *buffer, size_t off,
   const char *file, int line, const char *func, const void *subject)
 {
-  size_t rem = fgaj_conf_get()->subject_maxlen;
-  size_t off = 0;
+  size_t ooff = off;
+  size_t rem = fgaj_conf_get()->subject_maxlen - off;
 
   int w = snprintf(buffer + off, rem, file);
   if (w < 0) return -1; /* else */ off += w; rem -= w;
@@ -188,7 +188,7 @@ ssize_t fgaj_default_subjecter(
   if (subject) w = snprintf(buffer + off, rem, " %p", subject);
   if (w < 0) return -1; /* else */ off += w;
 
-  return off;
+  return off - ooff;
 }
 
 
@@ -349,7 +349,7 @@ static void fgaj_do_log(
 
   char sub[fgaj__conf->subject_maxlen + 1];
   memset(sub, 0, fgaj__conf->subject_maxlen + 1);
-  fgaj__conf->subjecter(sub, file, line, func, subject);
+  fgaj__conf->subjecter(sub, 0, file, line, func, subject);
 
   size_t ml = fgaj__conf->message_maxlen;
   char msg[ml + 1]; memset(msg, 0, ml + 1);

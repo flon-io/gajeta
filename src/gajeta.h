@@ -49,7 +49,7 @@
  * -1 in case of error.
  */
 typedef ssize_t fgaj_subjecter(
-  char *buffer,
+  char *buffer, size_t off,
   const char *file, int line, const char *func, const void *subject);
 
 /* Logger function type.
@@ -97,7 +97,7 @@ void fgaj_read_env();
 /* Default subjecter function.
  */
 ssize_t fgaj_default_subjecter(
-  char *buffer,
+  char *buffer, size_t off,
   const char *file, int line, const char *func, const void *subject);
 
 //
