@@ -353,7 +353,7 @@ static void fgaj_do_log(
 
   size_t ml = fgaj__conf->message_maxlen;
   char msg[ml + 1]; memset(msg, 0, ml + 1);
-  int w = vsnprintf(msg, ml, format, ap);
+  int w = format ? vsnprintf(msg, ml, format, ap) : 0;
   if (err) snprintf(msg + w, ml - w, ": (E%d) %s", errno, strerror(errno));
 
   fgaj__conf->logger(level, sub, msg);

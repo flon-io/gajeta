@@ -51,6 +51,17 @@ context "logging"
     }
   }
 
+  describe "fgaj_d()"
+  {
+    it "doesn't mind a NULL msg"
+    {
+      fgaj_d(NULL);
+
+      ensure(fgaj_conf_get()->out ^== "*** DEBUG s.c:");
+      ensure(fgaj_conf_get()->out $==f " ");
+    }
+  }
+
   describe "fgaj_r()"
   {
     after each
@@ -96,6 +107,16 @@ context "logging"
 
       ensure(fgaj_conf_get()->out >==F flu_sprintf(" %p ", subject));
     }
+
+    it "doesn't mind a NULL msg"
+    {
+      char *subject = "nil.or.nihil";
+
+      fgaj_sd(subject, NULL);
+
+      ensure(fgaj_conf_get()->out ^== "*** DEBUG s.c:");
+      ensure(fgaj_conf_get()->out >==F flu_sprintf(" %p ", subject));
+    }
   }
 
   describe "fgaj_sdr()"
@@ -108,6 +129,18 @@ context "logging"
 
       ensure(fgaj_conf_get()->out $== ": (E0) Success");
       ensure(fgaj_conf_get()->out >==F flu_sprintf(" %p ", subject));
+    }
+
+    it "doesn't mind a NULL msg"
+    {
+      char *subject = "furor";
+
+      fgaj_sdr(subject, NULL);
+
+      ensure(fgaj_conf_get()->out ^== ""
+        "*** DEBUG s.c:");
+      ensure(fgaj_conf_get()->out $==F flu_sprintf(
+        " %p : (E0) Success", subject));
     }
   }
 
