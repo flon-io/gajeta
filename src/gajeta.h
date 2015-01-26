@@ -45,8 +45,10 @@
 // 50 'e' error
 
 /* "subjecter" function type.
+ * Returns the length of the "subject" written to buffer or
+ * -1 in case of error.
  */
-typedef void fgaj_subjecter(
+typedef ssize_t fgaj_subjecter(
   char *buffer,
   const char *file, int line, const char *func, const void *subject);
 
@@ -94,7 +96,7 @@ void fgaj_read_env();
 
 /* Default subjecter function.
  */
-void fgaj_default_subjecter(
+ssize_t fgaj_default_subjecter(
   char *buffer,
   const char *file, int line, const char *func, const void *subject);
 

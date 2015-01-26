@@ -164,7 +164,7 @@ char fgaj_parse_level(char *s)
 //
 // "subjecters"
 
-void fgaj_default_subjecter(
+ssize_t fgaj_default_subjecter(
   char *buffer,
   const char *file, int line, const char *func, const void *subject)
 {
@@ -172,20 +172,23 @@ void fgaj_default_subjecter(
   size_t off = 0;
 
   int w = snprintf(buffer + off, rem, file);
-  if (w < 0) return; /* else */ off += w; rem -= w;
+  if (w < 0) return -1; /* else */ off += w; rem -= w;
 
   if (line > -1)
   {
     w = snprintf(buffer + off, rem, ":%d", line);
-    if (w < 0) return; /* else */ off += w; rem -= w;
+    if (w < 0) return -1; /* else */ off += w; rem -= w;
   }
   if (func)
   {
     w = snprintf(buffer + off, rem, ":%s", func);
-    if (w < 0) return; /* else */ off += w; rem -= w;
+    if (w < 0) return -1; /* else */ off += w; rem -= w;
   }
 
   if (subject) w = snprintf(buffer + off, rem, " %p", subject);
+  if (w < 0) return -1; /* else */ off += w;
+
+  return off;
 }
 
 
