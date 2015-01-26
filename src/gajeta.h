@@ -46,11 +46,13 @@
 
 /* "subjecter" function type.
  */
-typedef char *fgaj_subjecter(const char *file, int line, const char *func);
+typedef char *fgaj_subjecter(
+  const char *file, int line, const char *func, const void *subject);
 
 /* Logger function type.
  */
-typedef void fgaj_logger(char level, const char *subject, const char *msg);
+typedef void fgaj_logger(
+  char level, const char *subject, const char *msg);
 
 
 //
@@ -90,7 +92,7 @@ void fgaj_read_env();
 /* Default subjecter function.
  */
 char *fgaj_default_subjecter(
-  const char *file, int line, const char *func);
+  const char *file, int line, const char *func, const void *subject);
 
 //
 // loggers
@@ -120,44 +122,71 @@ void fgaj_grey_logger(
  *
  * It accepts 'r' as a [virtual] level as well (like 'e' but appends the
  * result of strerror(errno) to the message)
+ *
+ * When `short` is 1, it will log `errno`'s text value as well (akin
+ * to `perror()`.
  */
 void fgaj_log(
-  char level,
-  const char *file, int line, const char *func,
+  char level, short err,
+  const char *file, int line, const char *func, const void *subject,
   const char *format, ...);
 
 // the ellipsis in there cover "format and ellipsis"...
 
-#define fgaj_t(...) fgaj_log('t', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_d(...) fgaj_log('d', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_i(...) fgaj_log('i', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_w(...) fgaj_log('w', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_e(...) fgaj_log('e', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_t(...) \
+  fgaj_log('t', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_d(...) \
+  fgaj_log('d', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_i(...) \
+  fgaj_log('i', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_w(...) \
+  fgaj_log('w', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_e(...) \
+  fgaj_log('e', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 
-#define fgaj_r(...) fgaj_log('r', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_r(...) \
+  fgaj_log('r', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 
 #define fgaj_l(level, ...) \
-  fgaj_log(level, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log(level, level == 'r', __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 
 #define fgaj_ll(level, subject, ...) \
-  fgaj_log(level, subject, -1, NULL, __VA_ARGS__)
-
-//
-// sometimes one wants to log an error at the trace level...
-
-void fgaj_rlog(
-  char level, short err,
-  const char *file, int line, const char *func,
-  const char *format, ...);
+  fgaj_log(level, level == 'r', subject, -1, NULL, NULL, __VA_ARGS__)
 
 #define fgaj_tr(...) \
-  fgaj_rlog('t', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('t', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 #define fgaj_dr(...) \
-  fgaj_rlog('d', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('d', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 #define fgaj_ir(...) \
-  fgaj_rlog('i', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('i', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 #define fgaj_wr(...) \
-  fgaj_rlog('w', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('w', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+
+#define fgaj_st(...) \
+  fgaj_log('t', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sd(...) \
+  fgaj_log('d', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_si(...) \
+  fgaj_log('i', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sw(...) \
+  fgaj_log('w', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_se(...) \
+  fgaj_log('e', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_sr(...) \
+  fgaj_log('r', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_str(...) \
+  fgaj_log('t', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sdr(...) \
+  fgaj_log('d', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sir(...) \
+  fgaj_log('i', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_swr(...) \
+  fgaj_log('w', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_sl(level, ...) \
+  fgaj_log(level, level == 'r', __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 
 //

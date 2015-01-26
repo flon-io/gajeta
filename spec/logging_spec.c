@@ -86,6 +86,31 @@ context "logging"
     }
   }
 
+  describe "fgaj_sd()"
+  {
+    it "accepts a 'subject'"
+    {
+      char *subject = "flon.subject";
+
+      fgaj_sd(subject, "blah blah blah");
+
+      ensure(fgaj_conf_get()->out >==F flu_sprintf(" %p ", subject));
+    }
+  }
+
+  describe "fgaj_sdr()"
+  {
+    it "accepts a 'subject' and displays the errno message"
+    {
+      char *subject = "flon.subject";
+
+      fgaj_sdr(subject, "black rain");
+
+      ensure(fgaj_conf_get()->out $== ": Success");
+      ensure(fgaj_conf_get()->out >==F flu_sprintf(" %p ", subject));
+    }
+  }
+
   context "when fgaj_conf()->logger is null"
   {
     it "doesn't log"

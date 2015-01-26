@@ -155,13 +155,16 @@ char fgaj_parse_level(char *s)
 //
 // "subjecters"
 
-char *fgaj_default_subjecter(const char *file, int line, const char *func)
+char *fgaj_default_subjecter(
+  const char *file, int line, const char *func, const void *subject)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
 
   flu_sbputs(b, file);
   if (line > -1) flu_sbprintf(b, ":%d", line);
   if (func != NULL) flu_sbprintf(b, ":%s", func);
+
+  if (subject != NULL) flu_sbprintf(b, " %p", subject);
 
   return flu_sbuffer_to_string(b);
 }
@@ -310,7 +313,7 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
 
 static void fgaj_do_log(
   char level,
-  const char *file, int line, const char *func,
+  const char *file, int line, const char *func, const void *subject,
   const char *format, va_list ap, short err)
 {
   if (fgaj__conf == NULL) fgaj_init();
@@ -320,7 +323,7 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  char *subject = fgaj__conf->subjecter(file, line, func);
+  char *sub = fgaj__conf->subjecter(file, line, func, subject);
 
   flu_sbuffer *b = flu_sbuffer_malloc();
   flu_sbvprintf(b, format, ap);
@@ -328,29 +331,19 @@ static void fgaj_do_log(
   //
   char *msg = flu_sbuffer_to_string(b);
 
-  fgaj__conf->logger(level, subject, msg);
+  fgaj__conf->logger(level, sub, msg);
 
-  free(subject);
+  free(sub);
   free(msg);
 }
 
 void fgaj_log(
-  char level,
-  const char *file, int line, const char *func,
-  const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log(level, file, line, func, format, ap, tolower(level) == 'r');
-  va_end(ap);
-}
-
-void fgaj_rlog(
   char level, short err,
-  const char *file, int line, const char *func,
+  const char *file, int line, const char *func, const void *subject,
   const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log(level, file, line, func, format, ap, err);
+  fgaj_do_log(level, file, line, func, subject, format, ap, err);
   va_end(ap);
 }
 
