@@ -44,8 +44,11 @@
 // 40 'w' warn
 // 50 'e' error
 
-/*
- * Logger function type.
+/* "subjecter" function type.
+ */
+typedef char *fgaj_subjecter(const char *file, int line, const char *func);
+
+/* Logger function type.
  */
 typedef void fgaj_logger(char level, const char *subject, const char *msg);
 
@@ -58,10 +61,11 @@ typedef struct fgaj_conf {
   char level;  // defaults to 30 (info)
   short utc;   // 1 = true, defaults to 0
   char *host;  // defaults to result of gethostname()
-  fgaj_logger *logger;  // logger function
-  void *out;            // logging destination
-  short flush;          // defaults to 0, when 1 will flush after each log
-  void *params;         // whatever suits the logger func
+  fgaj_subjecter *subjecter;  // "subjecter" function
+  fgaj_logger *logger;        // logger function
+  void *out;                  // logging destination
+  short flush;                // defaults to 0, when 1 will flush after each log
+  void *params;               // whatever suits the logger func
 } fgaj_conf;
 
 /* Returns the configuration global var.
@@ -79,6 +83,14 @@ void fgaj_conf_reset();
  */
 void fgaj_read_env();
 
+
+//
+// "subjecters"
+
+/* Default subjecter function.
+ */
+char *fgaj_default_subjecter(
+  const char *file, int line, const char *func);
 
 //
 // loggers

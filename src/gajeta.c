@@ -89,6 +89,7 @@ static void fgaj_init()
 
   fgaj__conf->level = 30; // default to INFO
 
+  fgaj__conf->subjecter = fgaj_default_subjecter;
   fgaj__conf->logger = fgaj_color_file_logger;
   fgaj__conf->out = NULL;
   fgaj__conf->params = NULL;
@@ -150,9 +151,24 @@ char fgaj_parse_level(char *s)
   return fgaj_normalize_level(*s);
 }
 
+
+//
+// "subjecters"
+
+char *fgaj_default_subjecter(const char *file, int line, const char *func)
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  flu_sbputs(b, file);
+  if (line > -1) flu_sbprintf(b, ":%d", line);
+  if (func != NULL) flu_sbprintf(b, ":%s", func);
+
+  return flu_sbuffer_to_string(b);
+}
+
+
 //
 // loggers
-
 
 // PS1="\[\033[1;34m\][\$(date +%H%M)][\u@\h:\w]$\[\033[0m\] "
 //
@@ -304,16 +320,9 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  flu_sbuffer *b = NULL;
+  char *subject = fgaj__conf->subjecter(file, line, func);
 
-  b = flu_sbuffer_malloc();
-  flu_sbputs(b, file);
-  if (line > -1) flu_sbprintf(b, ":%d", line);
-  if (func != NULL) flu_sbprintf(b, ":%s", func);
-  //
-  char *subject = flu_sbuffer_to_string(b);
-
-  b = flu_sbuffer_malloc();
+  flu_sbuffer *b = flu_sbuffer_malloc();
   flu_sbvprintf(b, format, ap);
   if (err) flu_sbprintf(b, ": %s", strerror(errno));
   //
