@@ -210,7 +210,11 @@ static short fgaj_color(FILE *f)
 {
   if (fgaj__conf->color == 'T') return 1;
   if (fgaj__conf->color == 'f') return 0;
-  return isatty(fileno(f));
+  int rno = errno;
+  short r = isatty(fileno(f));
+  errno = rno;
+
+  return r;
 }
 
 static char *fgaj_red(int c) { return c ? "[0;31m" : ""; }
