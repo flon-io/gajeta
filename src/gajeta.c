@@ -165,7 +165,7 @@ char fgaj_parse_level(char *s)
 // "subjecters"
 
 void fgaj_default_subjecter(
-  const char *buffer,
+  char *buffer,
   const char *file, int line, const char *func, const void *subject)
 {
   size_t rem = fgaj_conf_get()->subject_maxlen;

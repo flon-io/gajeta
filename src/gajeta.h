@@ -47,7 +47,7 @@
 /* "subjecter" function type.
  */
 typedef void fgaj_subjecter(
-  const char *buffer,
+  char *buffer,
   const char *file, int line, const char *func, const void *subject);
 
 /* Logger function type.
@@ -95,7 +95,7 @@ void fgaj_read_env();
 /* Default subjecter function.
  */
 void fgaj_default_subjecter(
-  const char *buffer,
+  char *buffer,
   const char *file, int line, const char *func, const void *subject);
 
 //
