@@ -322,6 +322,8 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
     "%s%*s%s %-*s %s%s\n",
     cgrey, indent + 6, lstr, pid, 0, pref, msg, cclear);
 
+  if (fgaj__conf->flush) fflush(f);
+
   if (*pid != 0) free(pid);
   fgaj_level_string_free(lstr);
 }
@@ -342,12 +344,12 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  char sub[fgaj__conf->subject_maxlen];
-  memset(sub, 0, fgaj__conf->subject_maxlen);
+  char sub[fgaj__conf->subject_maxlen + 1];
+  memset(sub, 0, fgaj__conf->subject_maxlen + 1);
   fgaj__conf->subjecter(sub, file, line, func, subject);
 
   size_t ml = fgaj__conf->message_maxlen;
-  char msg[ml]; memset(msg, 0, ml);
+  char msg[ml + 1]; memset(msg, 0, ml + 1);
   int w = vsnprintf(msg, ml, format, ap);
   if (err) snprintf(msg + w, ml - w, ": (E%d) %s", errno, strerror(errno));
 
