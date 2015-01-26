@@ -65,7 +65,7 @@ context "logging"
 
       ensure(fgaj_conf_get()->out ===f ""
         "*** ERROR flon.testing error while reading book"
-        ": Operation not permitted");
+        ": (E1) Operation not permitted");
     }
 
     it "is OK if errno is 0 or negative"
@@ -74,15 +74,15 @@ context "logging"
       fgaj_ll('r', "flon.testing", "zero");
 
       ensure(fgaj_conf_get()->out ===f ""
-        "*** ERROR flon.testing zero: Success");
+        "*** ERROR flon.testing zero: (E0) Success");
 
       errno = -1;
       fgaj_ll('r', "flon.testing", "nega");
 
-      ((char *)fgaj_conf_get()->out)[43] = '\0';
+      ((char *)fgaj_conf_get()->out)[49] = '\0';
 
       ensure(fgaj_conf_get()->out ===f ""
-        "*** ERROR flon.testing nega: Unknown error ");
+        "*** ERROR flon.testing nega: (E-1) Unknown error ");
     }
   }
 
@@ -106,7 +106,7 @@ context "logging"
 
       fgaj_sdr(subject, "black rain");
 
-      ensure(fgaj_conf_get()->out $== ": Success");
+      ensure(fgaj_conf_get()->out $== ": (E0) Success");
       ensure(fgaj_conf_get()->out >==F flu_sprintf(" %p ", subject));
     }
   }

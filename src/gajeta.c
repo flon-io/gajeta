@@ -346,15 +346,12 @@ static void fgaj_do_log(
   memset(sub, 0, fgaj__conf->subject_maxlen);
   fgaj__conf->subjecter(sub, file, line, func, subject);
 
-  flu_sbuffer *b = flu_sbuffer_malloc();
-  flu_sbvprintf(b, format, ap);
-  if (err) flu_sbprintf(b, ": %s", strerror(errno));
-  //
-  char *msg = flu_sbuffer_to_string(b);
+  size_t ml = fgaj__conf->message_maxlen;
+  char msg[ml]; memset(msg, 0, ml);
+  int w = vsnprintf(msg, ml, format, ap);
+  if (err) snprintf(msg + w, ml - w, ": (E%d) %s", errno, strerror(errno));
 
   fgaj__conf->logger(level, sub, msg);
-
-  free(msg);
 }
 
 void fgaj_log(
