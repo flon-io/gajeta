@@ -71,6 +71,12 @@ void fgaj_read_env()
   s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
   if (s) fgaj__conf->level = fgaj_parse_level(s);
   //printf("level: %i\n", fgaj__conf->level);
+
+  s = fgaj_getenv("FLON_LOG_SUBMAXLEN", "FGAJ_SUBMAXLEN");
+  if (s) fgaj__conf->subject_maxlen = strtoll(s, NULL, 10);
+  //
+  s = fgaj_getenv("FLON_LOG_MSGMAXLEN", "FGAJ_MSGMAXLEN");
+  if (s) fgaj__conf->message_maxlen = strtoll(s, NULL, 10);
 }
 
 static void fgaj_init()
@@ -93,6 +99,9 @@ static void fgaj_init()
   fgaj__conf->logger = fgaj_color_file_logger;
   fgaj__conf->out = NULL;
   fgaj__conf->params = NULL;
+
+  fgaj__conf->subject_maxlen = 256 - 1;
+  fgaj__conf->message_maxlen = 1024 - 1;
 
   // now that the defaults are in place, read the env
 
@@ -155,18 +164,28 @@ char fgaj_parse_level(char *s)
 //
 // "subjecters"
 
-char *fgaj_default_subjecter(
+void fgaj_default_subjecter(
+  const char *buffer,
   const char *file, int line, const char *func, const void *subject)
 {
-  flu_sbuffer *b = flu_sbuffer_malloc();
+  size_t rem = fgaj_conf_get()->subject_maxlen;
+  size_t off = 0;
 
-  flu_sbputs(b, file);
-  if (line > -1) flu_sbprintf(b, ":%d", line);
-  if (func != NULL) flu_sbprintf(b, ":%s", func);
+  int w = snprintf(buffer + off, rem, file);
+  if (w < 0) return; /* else */ off += w; rem -= w;
 
-  if (subject != NULL) flu_sbprintf(b, " %p", subject);
+  if (line > -1)
+  {
+    w = snprintf(buffer + off, rem, ":%d", line);
+    if (w < 0) return; /* else */ off += w; rem -= w;
+  }
+  if (func)
+  {
+    w = snprintf(buffer + off, rem, ":%s", func);
+    if (w < 0) return; /* else */ off += w; rem -= w;
+  }
 
-  return flu_sbuffer_to_string(b);
+  if (subject) w = snprintf(buffer + off, rem, " %p", subject);
 }
 
 
@@ -323,7 +342,9 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  char *sub = fgaj__conf->subjecter(file, line, func, subject);
+  char sub[fgaj__conf->subject_maxlen];
+  memset(sub, 0, fgaj__conf->subject_maxlen);
+  fgaj__conf->subjecter(sub, file, line, func, subject);
 
   flu_sbuffer *b = flu_sbuffer_malloc();
   flu_sbvprintf(b, format, ap);
@@ -333,7 +354,6 @@ static void fgaj_do_log(
 
   fgaj__conf->logger(level, sub, msg);
 
-  free(sub);
   free(msg);
 }
 

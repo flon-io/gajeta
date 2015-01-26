@@ -46,7 +46,8 @@
 
 /* "subjecter" function type.
  */
-typedef char *fgaj_subjecter(
+typedef void fgaj_subjecter(
+  const char *buffer,
   const char *file, int line, const char *func, const void *subject);
 
 /* Logger function type.
@@ -68,6 +69,8 @@ typedef struct fgaj_conf {
   void *out;                  // logging destination
   short flush;                // defaults to 0, when 1 will flush after each log
   void *params;               // whatever suits the logger func
+  size_t subject_maxlen;      // defaults to 256 (-1)
+  size_t message_maxlen;      // defaults to 1024 (-1)
 } fgaj_conf;
 
 /* Returns the configuration global var.
@@ -91,7 +94,8 @@ void fgaj_read_env();
 
 /* Default subjecter function.
  */
-char *fgaj_default_subjecter(
+void fgaj_default_subjecter(
+  const char *buffer,
   const char *file, int line, const char *func, const void *subject);
 
 //
